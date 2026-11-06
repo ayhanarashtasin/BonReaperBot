@@ -17,7 +17,9 @@ from ..storage.raw_events import load_manifest, read_events
 from ..strategy.pair_scanner import ScanThresholds, evaluate_pair
 from ..types import ArbCandidate, MarketSpec, from_jsonable, sha256_hex, to_jsonable
 
-EVALUATE_TOPICS = {"book", "price_change", "resnapshot"}
+# tick_size_change belongs here: the tick narrows near price extremes, and missing it makes valid
+# books look off-tick.
+EVALUATE_TOPICS = {"book", "price_change", "resnapshot", "tick_size_change"}
 
 
 def thresholds_from(settings: Settings) -> ScanThresholds:

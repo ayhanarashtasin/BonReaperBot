@@ -27,7 +27,7 @@ from ..market.rules import Instrument
 from ..settings import Settings, StrategiesConfig
 from ..storage.raw_events import read_events
 from ..types import MarketSpec, Mode
-from .experiments import SCENARIOS, market_specs
+from .experiments import SCENARIOS, market_specs, without_loss_stop
 from .metrics import compute_metrics
 from .probability import (
     FeatureRow,
@@ -391,7 +391,10 @@ def _audit_settings(settings: Settings, model_path: str, *, model_on: bool) -> S
             "model_path": model_path if model_on else None,
         }
     )
-    return settings.model_copy(update={"strategies": strategies, "mode": Mode.PAPER})
+    # The audit compares variants over every market, so the loss stop must not end it early.
+    return without_loss_stop(
+        settings.model_copy(update={"strategies": strategies, "mode": Mode.PAPER})
+    )
 
 
 def _audit_row(variant: str, scenario: str, metrics: dict[str, Any]) -> dict[str, Any]:

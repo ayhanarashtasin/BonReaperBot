@@ -197,6 +197,7 @@ class SimCore:
         self._sampler_started = False
         self._heartbeat_started = False
         self._next_heartbeat: int | None = None
+        self._last_mark: dict[str, Decimal] = {}
         self.clock_offset_ms = 0
         self._last_data_ms = 0
         self._exposed_ms = 0
@@ -456,7 +457,10 @@ class SimCore:
                 book = self.exchange.books.books.get(asset)
                 mid = book_mid(book.state()) if book else None
                 if mid is not None:
-                    position_value += quantity * mid
+                    self._last_mark[asset] = mid
+                # A closed market's book empties before settlement. Keep the last known mark
+                # rather than valuing the position at zero, which would fake a drawdown.
+                position_value += quantity * self._last_mark.get(asset, ZERO)
         equity = self.account.total_cash + self.account.cash_redeemable + position_value
         self.timeline.append(
             {

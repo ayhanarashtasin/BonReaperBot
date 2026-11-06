@@ -43,7 +43,33 @@ def _with_strategies(settings: Settings, **changes: Any) -> Settings:
     return settings.model_copy(update={"strategies": strategies, "mode": Mode.PAPER})
 
 
+def without_loss_stop(settings: Settings) -> Settings:
+    """Research only: lift the daily stop so that every market in the sample gets evaluated.
+
+    The stop latches on simulated losses and would otherwise end the sample early, leaving nothing
+    to measure. Order and exposure limits stay. Never use this outside research.
+    """
+    return settings.model_copy(
+        update={
+            "risk": settings.risk.model_copy(
+                update={"max_daily_realized_loss_usd": Decimal(RESEARCH_UNCAPPED_USD)}
+            ),
+            "paper": settings.paper.model_copy(
+                update={"starting_cash_usd": Decimal(RESEARCH_UNCAPPED_USD)}
+            ),
+        }
+    )
+
+
 def strategy_variants(settings: Settings) -> dict[str, Settings]:
+    capped = _capped_variants(settings)
+    return capped | {
+        "passive_maker_no_loss_stop": without_loss_stop(capped["passive_maker"]),
+        "passive_hedge_no_loss_stop": without_loss_stop(capped["passive_constrained_hedge"]),
+    }
+
+
+def _capped_variants(settings: Settings) -> dict[str, Settings]:
     return {
         "scanner_only": _with_strategies(
             settings,
@@ -193,6 +219,8 @@ def _row(name: str, scenario: str, partition: str, m: dict[str, Any]) -> dict[st
         "max_drawdown": m["equity"]["max_drawdown"],
         "unpaired_close_fraction": m["exposure"]["fraction_traded_markets_unpaired_at_close"],
         "markout_5s": m["markout_avg_per_share"]["5s"],
+        "per_traded_market": m["per_traded_market"],
+        "kill_active_at_end": m["safety"]["kill_active_at_end"],
         "ledger_errors": len(m["ledger"]["conservation_errors"]),
         "unclean_reconciliations": m["reconciliation"]["runs"] - m["reconciliation"]["clean"],
         "checksum": m["checksum"],
@@ -226,13 +254,17 @@ def _run_job(job: _Job, input_dir: Path, seed: int) -> dict[str, Any]:
 
 
 # Scenario coverage per strategy. Queue assumptions do not affect a pure taker route.
+# Sensitivities run without the loss stop, which would otherwise end most of them early.
+RESEARCH_UNCAPPED_USD = 1_000_000
 STRATEGY_SCENARIOS = {
     "scanner_only": ("central",),
     "taker_pair_research": ("central", "central_2x_latency"),
-    "passive_maker": tuple(SCENARIOS),
-    "passive_constrained_hedge": ("pessimistic", "central", "pessimistic_2x_latency"),
+    "passive_maker": ("pessimistic", "central"),
+    "passive_constrained_hedge": ("central",),
+    "passive_maker_no_loss_stop": tuple(SCENARIOS),
+    "passive_hedge_no_loss_stop": ("pessimistic", "central", "pessimistic_2x_latency"),
 }
-PARTITIONED_STRATEGIES = ("passive_maker", "passive_constrained_hedge")
+PARTITIONED_STRATEGIES = ("passive_maker_no_loss_stop", "passive_hedge_no_loss_stop")
 PARTITION_SCENARIOS = ("pessimistic", "central")
 
 
@@ -329,18 +361,26 @@ def render_compare(report: dict[str, Any], manifest: Any) -> str:
         "",
         "## Results",
         "",
-        "| Strategy | Scenario | Partition | Traded mkts | Realized | Unresolved cost | Fees | "
-        "Maker/Taker fills | Max DD | Unpaired at close | 5s markout |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Strategy | Scenario | Partition | Traded mkts | Realized | Mean per market | "
+        "95% CI | Fees | Maker/Taker fills | Max DD | Unpaired at close | 5s markout | "
+        "Stopped by |",
+        "|---|---|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---|",
     ]
     for row in report["rows"]:
         unpaired = row["unpaired_close_fraction"]
+        spread = row["per_traded_market"]
+        interval = (
+            f"{money(spread['mean_95ci_low'])} to {money(spread['mean_95ci_high'])}"
+            if "mean_95ci_low" in spread
+            else "n/a"
+        )
+        stopped = ", ".join(r for r in row["kill_active_at_end"]) or "-"
         lines.append(
             f"| {row['strategy']} | {row['scenario']} | {row['partition']} | "
             f"{row['markets_traded']} | {money(row['realized_pnl'])} | "
-            f"{money(row['unresolved_cost'])} | {money(row['fees'])} | "
+            f"{money(spread.get('mean'))} | {interval} | {money(row['fees'])} | "
             f"{row['maker_fills']}/{row['taker_fills']} | {money(row['max_drawdown'])} | "
-            f"{money(unpaired)} | {money(row['markout_5s'])} |"
+            f"{money(unpaired)} | {money(row['markout_5s'])} | {stopped} |"
         )
     lines += ["", "## Assumptions", ""]
     lines += [f"- {a}" for a in manifest.assumptions]

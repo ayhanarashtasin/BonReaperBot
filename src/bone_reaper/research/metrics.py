@@ -32,6 +32,29 @@ def _avg(values: list[Decimal]) -> Decimal | None:
     return sum(values, ZERO) / len(values)
 
 
+def _distribution(values: list[Decimal]) -> dict[str, Any]:
+    """Spread of per-market results, so that a total is never read without its uncertainty."""
+    count = len(values)
+    if count == 0:
+        return {"count": 0}
+    mean = sum(values, ZERO) / count
+    out: dict[str, Any] = {
+        "count": count,
+        "mean": mean,
+        "winners": sum(1 for v in values if v > 0),
+        "losers": sum(1 for v in values if v < 0),
+        "best": max(values),
+        "worst": min(values),
+    }
+    if count > 1:
+        variance = sum(((v - mean) ** 2 for v in values), ZERO) / (count - 1)
+        stderr = (variance / count).sqrt()
+        out["stderr"] = stderr
+        out["mean_95ci_low"] = mean - 2 * stderr
+        out["mean_95ci_high"] = mean + 2 * stderr
+    return out
+
+
 def _books_mid(core: SimCore, asset: str) -> Decimal | None:
     book = core.exchange.books.books.get(asset)
     if book is None:
@@ -88,6 +111,7 @@ def compute_metrics(core: SimCore) -> dict[str, Any]:
     ]
     timeline = core.timeline
     recon = core.reconciliations
+    outcomes = [m["realized_pnl"] for m in traded if m["realized_pnl"] is not None]
     metrics: dict[str, Any] = {
         "simulated": True,
         "disclaimer": DISCLAIMER,
@@ -106,6 +130,7 @@ def compute_metrics(core: SimCore) -> dict[str, Any]:
             "rebates_counted": "0 (never pre-counted)",
             "per_traded_market_avg": realized / len(traded) if traded else None,
         },
+        "per_traded_market": _distribution(outcomes),
         "equity": {
             "starting": account.starting_cash,
             "ending_cash_available": account.cash_available,

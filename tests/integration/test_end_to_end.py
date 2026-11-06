@@ -235,6 +235,8 @@ class TestG4Compare:
             "taker_pair_research",
             "passive_maker",
             "passive_constrained_hedge",
+            "passive_maker_no_loss_stop",
+            "passive_hedge_no_loss_stop",
         }
         scenarios = {r["scenario"] for r in report["rows"]}
         assert {"pessimistic", "central", "pessimistic_2x_latency"} <= scenarios
@@ -317,7 +319,8 @@ def _live_event(gamma_upcoming):
 
     raw = copy.deepcopy(gamma_upcoming)
     now = SystemClock().utc_ms()
-    start = now - now % 300_000
+    # One minute in, whatever the wall clock says, so the near-expiry cutoff can never interfere.
+    start = (now - 60_000) // 1000 * 1000
     fmt = "%Y-%m-%dT%H:%M:%SZ"
     raw["startTime"] = datetime.fromtimestamp(start / 1000, UTC).strftime(fmt)
     raw["endDate"] = datetime.fromtimestamp((start + 300_000) / 1000, UTC).strftime(fmt)
@@ -464,3 +467,34 @@ def test_streaming_reader_matches_a_full_sort():
     assert keys == sorted(keys) and len(streamed) > 1000
     only_control = list(read_events(FIXTURE, verify=False, sources=["control"]))
     assert only_control and all(e.source == "control" for e in only_control)
+
+
+def test_loss_stop_ends_the_capped_run_and_research_variant_is_labelled(paper):
+    """The stop works; the research variant lifts only the stop and keeps exposure limits."""
+    from bone_reaper.research.experiments import strategy_variants, without_loss_stop
+
+    variants = strategy_variants(paper)
+    capped = variants["passive_maker"]
+    uncapped = variants["passive_maker_no_loss_stop"]
+    assert capped.risk.max_daily_realized_loss_usd == paper.risk.max_daily_realized_loss_usd
+    assert uncapped.risk.max_daily_realized_loss_usd > capped.risk.max_daily_realized_loss_usd
+    for field in ("max_order_notional_usd", "max_unpaired_notional_usd", "max_open_orders"):
+        assert getattr(uncapped.risk, field) == getattr(capped.risk, field)
+    assert uncapped.risk.max_total_gross_notional_usd == capped.risk.max_total_gross_notional_usd
+    assert without_loss_stop(paper).mode is paper.mode
+
+
+def test_closed_market_positions_keep_their_last_mark(events, paper):
+    """An emptied book must not value a held position at zero and fake a drawdown."""
+    core = replay_events(events, paper, seed=7)
+    metrics = compute_metrics(core)
+    if metrics["fills"]["count"]:
+        assert metrics["equity"]["max_drawdown"] < paper.paper.starting_cash_usd / 2
+
+
+def test_per_market_distribution_is_reported(events, paper):
+    metrics = compute_metrics(replay_events(events, paper, seed=7))
+    spread = metrics["per_traded_market"]
+    assert spread["count"] == metrics["markets_traded"]
+    if spread["count"] > 1:
+        assert spread["mean_95ci_low"] <= spread["mean"] <= spread["mean_95ci_high"]

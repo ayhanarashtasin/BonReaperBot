@@ -40,3 +40,8 @@ reports/shadow/
 .roo/
 .trae/
 .windsurf/
+
+# Large per-candidate scan output and raw command logs (summaries are kept)
+reports/**/*.records.jsonl
+reports/*_real.txt
+reports/compare_run.txt
