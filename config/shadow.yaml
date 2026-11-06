@@ -1,0 +1,15 @@
+# Live books, hypothetical orders. Nothing is ever sent to the venue.
+mode: shadow
+live_enabled: false
+live_operator_approval: false
+strategies:
+  scan_pair: true
+  passive_quotes: true
+  probability_model: false
+  min_net_edge_usd: "0.50"
+  min_net_roi: "0.01"
+  allow_taker_taker: false
+  allow_negative_edge_risk_hedge: false
+paper:
+  starting_cash_usd: "100"
+  queue_scenario: pessimistic

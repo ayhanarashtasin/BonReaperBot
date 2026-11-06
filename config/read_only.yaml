@@ -1,0 +1,38 @@
+# Default mode. Public data, scanner and reports only. No order adapter is ever constructed.
+mode: read_only
+live_enabled: false
+live_operator_approval: false
+markets:
+  symbols: [BTC]
+  durations_minutes: [5]
+  max_concurrent: 1
+strategies:
+  scan_pair: true
+  passive_quotes: false
+  probability_model: false
+  min_net_edge_usd: "0.50"
+  min_net_roi: "0.01"
+  allow_taker_taker: false
+  allow_negative_edge_risk_hedge: false
+  refresh_min_ticks: 2
+risk:
+  max_order_notional_usd: "10"
+  max_unpaired_notional_usd: "20"
+  max_total_gross_notional_usd: "100"
+  max_daily_realized_loss_usd: "10"
+  max_open_orders: 4
+  stop_new_quotes_seconds_before_close: 20
+  max_book_age_ms: 1000
+  max_reference_age_ms: 2000
+  max_user_stream_silence_ms: 5000
+  max_unexplained_reconciliation_usd: "0.01"
+execution:
+  maker_post_only: true
+  prefer_order_type: GTC
+  cancel_on_disconnect: true
+  retry_unknown_order_submit: false
+  reconcile_on_reconnect: true
+storage:
+  raw: parquet
+  ledger: memory
+  raw_dir: data/raw

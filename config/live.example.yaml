@@ -1,0 +1,11 @@
+# EXAMPLE ONLY. These flags do not enable trading: no real adapter exists in this release, and
+# every path returns LIVE_DISABLED until P7 is separately authorized (tasks.md section 9).
+mode: live
+live_enabled: true
+live_operator_approval: true
+risk:
+  max_order_notional_usd: "1"
+  max_unpaired_notional_usd: "2"
+  max_total_gross_notional_usd: "5"
+  max_daily_realized_loss_usd: "1"
+  max_open_orders: 2

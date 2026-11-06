@@ -1,0 +1,42 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Recorded market data and run output (reproducible, potentially large)
+data/
+reports/paper/
+reports/shadow/
+
+# Assistant tooling folders that are not part of this project
+.agent/
+.claude/
+.codebuddy/
+.codex/
+.continue/
+.cursor/
+.gemini/
+.github/prompts/
+.kiro/
+.opencode/
+.qoder/
+.roo/
+.trae/
+.windsurf/
