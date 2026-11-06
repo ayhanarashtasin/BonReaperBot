@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import Callable, Iterable, Sequence
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -445,50 +446,75 @@ def audit_decision(rows: Iterable[dict[str, Any]], resolved_markets: int) -> dic
     }
 
 
+AUDIT_VARIANTS = (
+    "midpoint_baseline",
+    "random_walk_model",
+    "logistic_model",
+    "logistic_model_delayed_twap_5s",
+)
+
+
+def _audit_job(
+    variant: str, scenario: str, input_dir: Path, settings: Settings, model_path: Path, seed: int
+) -> tuple[dict[str, Any], int]:
+    """One replay. Top-level, so it can run in a worker process."""
+    model = load_model(model_path)
+    if variant == "midpoint_baseline":
+        core = replay_events(
+            read_events(input_dir, verify=False),
+            _audit_settings(settings, str(model_path), model_on=False),
+            SCENARIOS[scenario],
+            seed=seed,
+            strategy_id=variant,
+        )
+        return _audit_row(variant, scenario, compute_metrics(core)), len(core.resolved)
+    predict = baseline_probability if variant == "random_walk_model" else model.predict
+    delay = 5000 if variant == "logistic_model_delayed_twap_5s" else 0
+
+    def factory(sim: SimCore) -> Callable[[], float | None]:
+        return reference_probability(sim, predict, delay_ms=delay)
+
+    core = replay_events(
+        read_events(input_dir, verify=False),
+        _audit_settings(settings, str(model_path), model_on=True),
+        SCENARIOS[scenario],
+        seed=seed,
+        strategy_id=variant,
+        probability_factory=factory,
+        model_hash=model.model_hash,
+    )
+    return _audit_row(variant, scenario, compute_metrics(core)), len(core.resolved)
+
+
 def run_model_audit(
-    input_dir: Path, settings: Settings, model_path: Path, output_dir: Path, seed: int
+    input_dir: Path,
+    settings: Settings,
+    model_path: Path,
+    output_dir: Path,
+    seed: int,
+    workers: int = 1,
 ) -> dict[str, Any]:
     model: LogisticModel = load_model(model_path)
     specs: list[MarketSpec] = market_specs(read_events(input_dir, sources=["control"]))
-    scenarios = ("pessimistic", "central")
-    rows: list[dict[str, Any]] = []
-    off = _audit_settings(settings, str(model_path), model_on=False)
-    on = _audit_settings(settings, str(model_path), model_on=True)
-    resolved = 0
-    for scenario_name in scenarios:
-        core = replay_events(
-            read_events(input_dir, verify=False),
-            off,
-            SCENARIOS[scenario_name],
-            seed=seed,
-            strategy_id="midpoint",
-        )
-        metrics = compute_metrics(core)
-        resolved = len(core.resolved)
-        rows.append(_audit_row("midpoint_baseline", scenario_name, metrics))
-        for label, predict, delay in (
-            ("random_walk_model", baseline_probability, 0),
-            ("logistic_model", model.predict, 0),
-            ("logistic_model_delayed_twap_5s", model.predict, 5000),
-        ):
-
-            def factory(
-                sim: SimCore,
-                fn: Callable[[FeatureRow], float] = predict,
-                wait: int = delay,
-            ) -> Callable[[], float | None]:
-                return reference_probability(sim, fn, delay_ms=wait)
-
-            core = replay_events(
-                read_events(input_dir, verify=False),
-                on,
-                SCENARIOS[scenario_name],
-                seed=seed,
-                strategy_id=label,
-                probability_factory=factory,
-                model_hash=model.model_hash,
+    jobs = [(v, s) for s in ("pessimistic", "central") for v in AUDIT_VARIANTS]
+    count = len(jobs)
+    if workers > 1:
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            results = list(
+                pool.map(
+                    _audit_job,
+                    [v for v, _ in jobs],
+                    [s for _, s in jobs],
+                    [input_dir] * count,
+                    [settings] * count,
+                    [model_path] * count,
+                    [seed] * count,
+                )
             )
-            rows.append(_audit_row(label, scenario_name, compute_metrics(core)))
+    else:
+        results = [_audit_job(v, s, input_dir, settings, model_path, seed) for v, s in jobs]
+    rows = [row for row, _ in results]
+    resolved = max(count for _, count in results)
     decision = audit_decision([r for r in rows if "delayed" not in r["variant"]], resolved)
     manifest = build_manifest(
         "model_audit",
