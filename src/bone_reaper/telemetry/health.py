@@ -2,24 +2,29 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sys
 from collections import Counter, defaultdict
 from collections.abc import Callable
+from dataclasses import asdict
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 import polymarket
 
+from ..connectors.binance import measure_clock_offset
 from ..connectors.geoblock import check_geoblock
 from ..execution.real import live_gate_reasons
 from ..market.book import BookManager
 from ..market.validation import compare_snapshots
 from ..settings import Settings
 from ..storage.raw_events import load_manifest, read_events, verify_manifest
+from ..time import SystemClock
 from ..types import MarketSpec, Mode, from_jsonable
+from .alerts import HealthInputs, evaluate_alerts
 
 _SECRET_ENV_HINTS = ("PRIVATE_KEY", "MNEMONIC", "SEED_PHRASE", "API_SECRET", "PASSPHRASE")
 
@@ -50,6 +55,12 @@ def doctor_report(
             "country": geo.country,
             "detail": geo.detail,
         }
+        try:
+            probe = asyncio.run(measure_clock_offset(SystemClock()))
+            checks["clock_offset_ms"] = probe["offset_ms"]
+            checks["clock_ok"] = abs(probe["offset_ms"]) <= settings.risk.max_clock_skew_ms
+        except Exception as exc:
+            checks["clock_offset_ms"] = f"unavailable:{type(exc).__name__}"
     checks["live_gate"] = live_gate_reasons(settings, geo)
     checks["live_disabled"] = bool(checks["live_gate"])
     leaked = sorted(k for k in os.environ if any(h in k.upper() for h in _SECRET_ENV_HINTS))
@@ -80,7 +91,25 @@ def health_report(settings: Settings, raw_dir: Path) -> dict[str, Any]:
     if not health_path.exists():
         return report | {"recorder": "no_health_file", "status": "no_recorder_data"}
     doc = json.loads(health_path.read_text("utf-8"))
-    return report | {"recorder": doc, "status": "recorded_state"}
+    return report | {
+        "recorder": doc,
+        "status": "recorded_state",
+        "alerts": [asdict(a) for a in evaluate_alerts(_inputs_from(doc, settings))],
+    }
+
+
+def _inputs_from(doc: dict[str, Any], settings: Settings) -> HealthInputs:
+    """Alert inputs from a recorder health file. Unknown account fields stay at safe defaults."""
+    ages = [b["age_ms"] for b in doc.get("books", {}).values() if b.get("age_ms") is not None]
+    return HealthInputs(
+        now_utc_ms=int(doc.get("ts_utc_ms", 0)),
+        book_age_ms=max(ages) if ages else None,
+        max_book_age_ms=settings.risk.max_book_age_ms,
+        rollover_failures=len(doc.get("rollover_failures", [])),
+        clock_offset_ms=doc.get("clock_offset_ms"),
+        max_clock_offset_ms=settings.risk.max_clock_skew_ms,
+        data_gaps=int(doc.get("gaps", 0)),
+    )
 
 
 def coverage_report(raw_dir: Path) -> dict[str, Any]:

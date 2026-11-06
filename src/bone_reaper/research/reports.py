@@ -88,6 +88,12 @@ def write_json(path: Path, doc: Any) -> None:
     path.write_text(json.dumps(to_jsonable(doc), indent=1, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def write_research_json(path: Path, doc: dict[str, Any]) -> None:
+    """For forecast statistics only: floats are fine for probabilities, never for money."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, indent=1, sort_keys=True, default=str) + "\n", encoding="utf-8")
+
+
 def money(value: Any) -> str:
     if value is None:
         return "n/a"

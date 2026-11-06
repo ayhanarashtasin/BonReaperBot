@@ -246,11 +246,13 @@ class SimExchange:
         elif kind == "price_change":
             self.books.apply(payload, recv_utc_ms)
             for change in payload.get("price_changes", ()):
-                asset = str(change.get("asset_id"))
-                side = str(change["side"])
-                price = Decimal(change["price"])
-                self.overlay.venue_update(asset, side, price)
-                self._level_changed(asset, side, price, Decimal(change["size"]))
+                # Most updates touch no resting order and none of our consumed depth.
+                if self.resting or self.overlay.consumed:
+                    asset = str(change.get("asset_id"))
+                    side = str(change["side"])
+                    price = Decimal(change["price"])
+                    self.overlay.venue_update(asset, side, price)
+                    self._level_changed(asset, side, price, Decimal(change["size"]))
         elif kind == "tick_size_change":
             self.books.apply(payload, recv_utc_ms)
         elif kind == "last_trade_price":

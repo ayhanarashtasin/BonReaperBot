@@ -55,6 +55,7 @@ line-length = 100
 target-version = "py311"
 src = ["src", "tests"]
 extend-exclude = [
+    "*.md",
     ".agent", ".claude", ".codebuddy", ".codex", ".continue", ".cursor", ".gemini",
     ".github", ".kiro", ".opencode", ".qoder", ".roo", ".trae", ".windsurf",
 ]

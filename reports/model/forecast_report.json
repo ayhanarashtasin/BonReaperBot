@@ -1,0 +1,648 @@
+{
+ "base_rate_up": 0.4944,
+ "benchmark_vs_market_on_test": {
+  "baseline": {
+   "brier": 0.14222816931815668,
+   "ece": 0.037745904287013965,
+   "log_loss": 0.430443129849412,
+   "markets": 296,
+   "model": "baseline_random_walk",
+   "rows": 1184
+  },
+  "logistic": {
+   "brier": 0.14216334733217564,
+   "ece": 0.037190963291573675,
+   "log_loss": 0.43111104749201906,
+   "markets": 296,
+   "model": "logistic",
+   "rows": 1184
+  },
+  "market_price": {
+   "brier": 0.12679268433276975,
+   "ece": 0.03383994932432431,
+   "log_loss": 0.387321385069033,
+   "markets": 296,
+   "model": "market_price",
+   "rows": 1184
+  },
+  "rows": 1184
+ },
+ "caveat": "Features use Binance BTCUSDT 1-minute closes as a proxy; labels are official outcomes from Chainlink TWAP settlement. Live inputs would differ. A better forecast is not a profitable strategy.",
+ "code_commit": "dccad68d3db9fc99b6680dd8ad2063230cefe740+dirty",
+ "embargo_markets": 2,
+ "evaluation": {
+  "test": {
+   "baseline": {
+    "brier": 0.14432125790892328,
+    "ece": 0.03570658275423477,
+    "log_loss": 0.4375656094379736,
+    "markets": 498,
+    "model": "baseline_random_walk",
+    "reliability": [
+     {
+      "bucket_high": 0.1,
+      "bucket_low": 0.0,
+      "count": 285,
+      "mean_predicted": 0.033833050100682535,
+      "observed_up_rate": 0.021052631578947368
+     },
+     {
+      "bucket_high": 0.2,
+      "bucket_low": 0.1,
+      "count": 195,
+      "mean_predicted": 0.15052888836740547,
+      "observed_up_rate": 0.14358974358974358
+     },
+     {
+      "bucket_high": 0.3,
+      "bucket_low": 0.2,
+      "count": 205,
+      "mean_predicted": 0.2494301339495289,
+      "observed_up_rate": 0.17560975609756097
+     },
+     {
+      "bucket_high": 0.4,
+      "bucket_low": 0.3,
+      "count": 190,
+      "mean_predicted": 0.3497027302397055,
+      "observed_up_rate": 0.24210526315789474
+     },
+     {
+      "bucket_high": 0.5,
+      "bucket_low": 0.4,
+      "count": 202,
+      "mean_predicted": 0.45231592654068964,
+      "observed_up_rate": 0.36633663366336633
+     },
+     {
+      "bucket_high": 0.6,
+      "bucket_low": 0.5,
+      "count": 211,
+      "mean_predicted": 0.5461650892498032,
+      "observed_up_rate": 0.5308056872037915
+     },
+     {
+      "bucket_high": 0.7,
+      "bucket_low": 0.6,
+      "count": 176,
+      "mean_predicted": 0.6494249246692353,
+      "observed_up_rate": 0.6363636363636364
+     },
+     {
+      "bucket_high": 0.8,
+      "bucket_low": 0.7,
+      "count": 158,
+      "mean_predicted": 0.7476132514538685,
+      "observed_up_rate": 0.7658227848101266
+     },
+     {
+      "bucket_high": 0.9,
+      "bucket_low": 0.8,
+      "count": 147,
+      "mean_predicted": 0.8526223650013823,
+      "observed_up_rate": 0.8503401360544217
+     },
+     {
+      "bucket_high": 1.0,
+      "bucket_low": 0.9,
+      "count": 223,
+      "mean_predicted": 0.9666581503556304,
+      "observed_up_rate": 0.9865470852017937
+     }
+    ],
+    "rows": 1992
+   },
+   "logistic": {
+    "brier": 0.14350431950161438,
+    "ece": 0.039227734787759094,
+    "log_loss": 0.4347388129459075,
+    "markets": 498,
+    "model": "logistic",
+    "reliability": [
+     {
+      "bucket_high": 0.1,
+      "bucket_low": 0.0,
+      "count": 336,
+      "mean_predicted": 0.03919693414250568,
+      "observed_up_rate": 0.03273809523809524
+     },
+     {
+      "bucket_high": 0.2,
+      "bucket_low": 0.1,
+      "count": 194,
+      "mean_predicted": 0.15046915135833275,
+      "observed_up_rate": 0.14432989690721648
+     },
+     {
+      "bucket_high": 0.3,
+      "bucket_low": 0.2,
+      "count": 194,
+      "mean_predicted": 0.2515461329466266,
+      "observed_up_rate": 0.18041237113402062
+     },
+     {
+      "bucket_high": 0.4,
+      "bucket_low": 0.3,
+      "count": 150,
+      "mean_predicted": 0.348081673619636,
+      "observed_up_rate": 0.2733333333333333
+     },
+     {
+      "bucket_high": 0.5,
+      "bucket_low": 0.4,
+      "count": 166,
+      "mean_predicted": 0.4504991483739213,
+      "observed_up_rate": 0.37349397590361444
+     },
+     {
+      "bucket_high": 0.6,
+      "bucket_low": 0.5,
+      "count": 189,
+      "mean_predicted": 0.5477267768706059,
+      "observed_up_rate": 0.48148148148148145
+     },
+     {
+      "bucket_high": 0.7,
+      "bucket_low": 0.6,
+      "count": 163,
+      "mean_predicted": 0.6503484549896807,
+      "observed_up_rate": 0.5521472392638037
+     },
+     {
+      "bucket_high": 0.8,
+      "bucket_low": 0.7,
+      "count": 153,
+      "mean_predicted": 0.750111410140834,
+      "observed_up_rate": 0.7450980392156863
+     },
+     {
+      "bucket_high": 0.9,
+      "bucket_low": 0.8,
+      "count": 173,
+      "mean_predicted": 0.8535636271460351,
+      "observed_up_rate": 0.8208092485549133
+     },
+     {
+      "bucket_high": 1.0,
+      "bucket_low": 0.9,
+      "count": 274,
+      "mean_predicted": 0.963413537381454,
+      "observed_up_rate": 0.9708029197080292
+     }
+    ],
+    "rows": 1992
+   }
+  },
+  "train": {
+   "baseline": {
+    "brier": 0.15350959281957116,
+    "ece": 0.021092489979892725,
+    "log_loss": 0.4620615857900267,
+    "markets": 1500,
+    "model": "baseline_random_walk",
+    "reliability": [
+     {
+      "bucket_high": 0.1,
+      "bucket_low": 0.0,
+      "count": 873,
+      "mean_predicted": 0.032295691744087786,
+      "observed_up_rate": 0.032073310423825885
+     },
+     {
+      "bucket_high": 0.2,
+      "bucket_low": 0.1,
+      "count": 445,
+      "mean_predicted": 0.1491212886158077,
+      "observed_up_rate": 0.14382022471910114
+     },
+     {
+      "bucket_high": 0.3,
+      "bucket_low": 0.2,
+      "count": 528,
+      "mean_predicted": 0.24979223206460682,
+      "observed_up_rate": 0.26325757575757575
+     },
+     {
+      "bucket_high": 0.4,
+      "bucket_low": 0.3,
+      "count": 534,
+      "mean_predicted": 0.34985976631779436,
+      "observed_up_rate": 0.3258426966292135
+     },
+     {
+      "bucket_high": 0.5,
+      "bucket_low": 0.4,
+      "count": 628,
+      "mean_predicted": 0.4530013276904356,
+      "observed_up_rate": 0.4410828025477707
+     },
+     {
+      "bucket_high": 0.6,
+      "bucket_low": 0.5,
+      "count": 766,
+      "mean_predicted": 0.5397408275181285,
+      "observed_up_rate": 0.5966057441253264
+     },
+     {
+      "bucket_high": 0.7,
+      "bucket_low": 0.6,
+      "count": 552,
+      "mean_predicted": 0.647460238493566,
+      "observed_up_rate": 0.6992753623188406
+     },
+     {
+      "bucket_high": 0.8,
+      "bucket_low": 0.7,
+      "count": 511,
+      "mean_predicted": 0.7476882967532034,
+      "observed_up_rate": 0.786692759295499
+     },
+     {
+      "bucket_high": 0.9,
+      "bucket_low": 0.8,
+      "count": 441,
+      "mean_predicted": 0.8492708029692748,
+      "observed_up_rate": 0.854875283446712
+     },
+     {
+      "bucket_high": 1.0,
+      "bucket_low": 0.9,
+      "count": 722,
+      "mean_predicted": 0.9667851057579251,
+      "observed_up_rate": 0.96398891966759
+     }
+    ],
+    "rows": 6000
+   },
+   "logistic": {
+    "brier": 0.15321804607435943,
+    "ece": 0.013405275195148144,
+    "log_loss": 0.46147571250429453,
+    "markets": 1500,
+    "model": "logistic",
+    "reliability": [
+     {
+      "bucket_high": 0.1,
+      "bucket_low": 0.0,
+      "count": 862,
+      "mean_predicted": 0.03794684378766507,
+      "observed_up_rate": 0.03480278422273782
+     },
+     {
+      "bucket_high": 0.2,
+      "bucket_low": 0.1,
+      "count": 488,
+      "mean_predicted": 0.15138362344190304,
+      "observed_up_rate": 0.14344262295081966
+     },
+     {
+      "bucket_high": 0.3,
+      "bucket_low": 0.2,
+      "count": 503,
+      "mean_predicted": 0.2507245103271702,
+      "observed_up_rate": 0.24453280318091453
+     },
+     {
+      "bucket_high": 0.4,
+      "bucket_low": 0.3,
+      "count": 487,
+      "mean_predicted": 0.35074531872974146,
+      "observed_up_rate": 0.3531827515400411
+     },
+     {
+      "bucket_high": 0.5,
+      "bucket_low": 0.4,
+      "count": 528,
+      "mean_predicted": 0.45062529548295244,
+      "observed_up_rate": 0.4034090909090909
+     },
+     {
+      "bucket_high": 0.6,
+      "bucket_low": 0.5,
+      "count": 737,
+      "mean_predicted": 0.5425143275798452,
+      "observed_up_rate": 0.5753052917232022
+     },
+     {
+      "bucket_high": 0.7,
+      "bucket_low": 0.6,
+      "count": 553,
+      "mean_predicted": 0.6494229398671095,
+      "observed_up_rate": 0.6636528028933092
+     },
+     {
+      "bucket_high": 0.8,
+      "bucket_low": 0.7,
+      "count": 531,
+      "mean_predicted": 0.7505223165163002,
+      "observed_up_rate": 0.7627118644067796
+     },
+     {
+      "bucket_high": 0.9,
+      "bucket_low": 0.8,
+      "count": 520,
+      "mean_predicted": 0.8490569810952532,
+      "observed_up_rate": 0.8384615384615385
+     },
+     {
+      "bucket_high": 1.0,
+      "bucket_low": 0.9,
+      "count": 791,
+      "mean_predicted": 0.960055228607367,
+      "observed_up_rate": 0.9608091024020228
+     }
+    ],
+    "rows": 6000
+   }
+  },
+  "validation": {
+   "baseline": {
+    "brier": 0.15849239674458587,
+    "ece": 0.024216957148844802,
+    "log_loss": 0.4710546281280395,
+    "markets": 498,
+    "model": "baseline_random_walk",
+    "reliability": [
+     {
+      "bucket_high": 0.1,
+      "bucket_low": 0.0,
+      "count": 255,
+      "mean_predicted": 0.030937926822449058,
+      "observed_up_rate": 0.027450980392156862
+     },
+     {
+      "bucket_high": 0.2,
+      "bucket_low": 0.1,
+      "count": 131,
+      "mean_predicted": 0.14941801755713335,
+      "observed_up_rate": 0.19083969465648856
+     },
+     {
+      "bucket_high": 0.3,
+      "bucket_low": 0.2,
+      "count": 178,
+      "mean_predicted": 0.2523201590527677,
+      "observed_up_rate": 0.3089887640449438
+     },
+     {
+      "bucket_high": 0.4,
+      "bucket_low": 0.3,
+      "count": 198,
+      "mean_predicted": 0.35121146318876373,
+      "observed_up_rate": 0.35858585858585856
+     },
+     {
+      "bucket_high": 0.5,
+      "bucket_low": 0.4,
+      "count": 193,
+      "mean_predicted": 0.45127979139953645,
+      "observed_up_rate": 0.49740932642487046
+     },
+     {
+      "bucket_high": 0.6,
+      "bucket_low": 0.5,
+      "count": 243,
+      "mean_predicted": 0.5470793792870154,
+      "observed_up_rate": 0.5473251028806584
+     },
+     {
+      "bucket_high": 0.7,
+      "bucket_low": 0.6,
+      "count": 187,
+      "mean_predicted": 0.6527117281050524,
+      "observed_up_rate": 0.7272727272727273
+     },
+     {
+      "bucket_high": 0.8,
+      "bucket_low": 0.7,
+      "count": 180,
+      "mean_predicted": 0.7497665160812791,
+      "observed_up_rate": 0.7722222222222223
+     },
+     {
+      "bucket_high": 0.9,
+      "bucket_low": 0.8,
+      "count": 153,
+      "mean_predicted": 0.8476293905374844,
+      "observed_up_rate": 0.8627450980392157
+     },
+     {
+      "bucket_high": 1.0,
+      "bucket_low": 0.9,
+      "count": 274,
+      "mean_predicted": 0.966725265208423,
+      "observed_up_rate": 0.9708029197080292
+     }
+    ],
+    "rows": 1992
+   },
+   "logistic": {
+    "brier": 0.1590646368840062,
+    "ece": 0.016703547676725564,
+    "log_loss": 0.4733251377947182,
+    "markets": 498,
+    "model": "logistic",
+    "reliability": [
+     {
+      "bucket_high": 0.1,
+      "bucket_low": 0.0,
+      "count": 264,
+      "mean_predicted": 0.03792182049434546,
+      "observed_up_rate": 0.045454545454545456
+     },
+     {
+      "bucket_high": 0.2,
+      "bucket_low": 0.1,
+      "count": 139,
+      "mean_predicted": 0.1441012778566464,
+      "observed_up_rate": 0.18705035971223022
+     },
+     {
+      "bucket_high": 0.3,
+      "bucket_low": 0.2,
+      "count": 186,
+      "mean_predicted": 0.2537979083725893,
+      "observed_up_rate": 0.3333333333333333
+     },
+     {
+      "bucket_high": 0.4,
+      "bucket_low": 0.3,
+      "count": 163,
+      "mean_predicted": 0.3498062656404489,
+      "observed_up_rate": 0.3558282208588957
+     },
+     {
+      "bucket_high": 0.5,
+      "bucket_low": 0.4,
+      "count": 170,
+      "mean_predicted": 0.44962411825697013,
+      "observed_up_rate": 0.4588235294117647
+     },
+     {
+      "bucket_high": 0.6,
+      "bucket_low": 0.5,
+      "count": 208,
+      "mean_predicted": 0.5500238756283949,
+      "observed_up_rate": 0.5528846153846154
+     },
+     {
+      "bucket_high": 0.7,
+      "bucket_low": 0.6,
+      "count": 163,
+      "mean_predicted": 0.6485631963325956,
+      "observed_up_rate": 0.6441717791411042
+     },
+     {
+      "bucket_high": 0.8,
+      "bucket_low": 0.7,
+      "count": 196,
+      "mean_predicted": 0.750581297957836,
+      "observed_up_rate": 0.7346938775510204
+     },
+     {
+      "bucket_high": 0.9,
+      "bucket_low": 0.8,
+      "count": 186,
+      "mean_predicted": 0.845462264821092,
+      "observed_up_rate": 0.8494623655913979
+     },
+     {
+      "bucket_high": 1.0,
+      "bucket_low": 0.9,
+      "count": 317,
+      "mean_predicted": 0.961536433913181,
+      "observed_up_rate": 0.9526813880126183
+     }
+    ],
+    "rows": 1992
+   }
+  }
+ },
+ "feature_source": "binance_spot_1m_proxy_with_official_labels",
+ "generated_utc": "2026-11-06T21:44:32.267586+00:00",
+ "markets": 2500,
+ "model": {
+  "feature_names": [
+   "z_score",
+   "distance_bps",
+   "momentum_bps",
+   "tau_fraction"
+  ],
+  "intercept": -0.023275803508784984,
+  "means": [
+   -0.05975381558845652,
+   -0.47160689962381674,
+   -0.10391154703586955,
+   0.5
+  ],
+  "scales": [
+   1.3896144070370282,
+   8.56934391423445,
+   5.336673859406312,
+   0.22360679774997896
+  ],
+  "train_rows": 6000,
+  "trained_through_ms": 1793700900000,
+  "weights": [
+   1.908095001098293,
+   0.6167163463521808,
+   -0.08455487012918893,
+   -0.01775440354571534
+  ]
+ },
+ "model_hash": "e6b864fbb5172f384d59eb74a6d6df315284deab536a29a5715e90cb52607c2b",
+ "period_end_utc_ms": 1794000900000,
+ "period_start_utc_ms": 1793243400000,
+ "rows": 10000,
+ "rows_skipped_missing_data": 0,
+ "split": {
+  "test": 498,
+  "train": 1500,
+  "validation": 498
+ },
+ "test_by_horizon": {
+  "baseline": [
+   {
+    "brier": 0.20454163387464974,
+    "ece": 0.051858396360571705,
+    "elapsed_s": 60,
+    "log_loss": 0.5964031832637643,
+    "markets": 498,
+    "model": "baseline",
+    "rows": 498
+   },
+   {
+    "brier": 0.1569370885016633,
+    "ece": 0.06432001278853375,
+    "elapsed_s": 120,
+    "log_loss": 0.4773544738916961,
+    "markets": 498,
+    "model": "baseline",
+    "rows": 498
+   },
+   {
+    "brier": 0.12199538206204225,
+    "ece": 0.04993585363905693,
+    "elapsed_s": 180,
+    "log_loss": 0.38128727010594676,
+    "markets": 498,
+    "model": "baseline",
+    "rows": 498
+   },
+   {
+    "brier": 0.09381092719733775,
+    "ece": 0.02371790951651287,
+    "elapsed_s": 240,
+    "log_loss": 0.295217510490485,
+    "markets": 498,
+    "model": "baseline",
+    "rows": 498
+   }
+  ],
+  "logistic": [
+   {
+    "brier": 0.20402808303555817,
+    "ece": 0.0649438070153738,
+    "elapsed_s": 60,
+    "log_loss": 0.594644652639106,
+    "markets": 498,
+    "model": "logistic",
+    "rows": 498
+   },
+   {
+    "brier": 0.15486566170601118,
+    "ece": 0.05756183512878984,
+    "elapsed_s": 120,
+    "log_loss": 0.4721426604972574,
+    "markets": 498,
+    "model": "logistic",
+    "rows": 498
+   },
+   {
+    "brier": 0.12126586571719052,
+    "ece": 0.057448244937066725,
+    "elapsed_s": 180,
+    "log_loss": 0.3768276958637217,
+    "markets": 498,
+    "model": "logistic",
+    "rows": 498
+   },
+   {
+    "brier": 0.09385766754769652,
+    "ece": 0.037960677670730886,
+    "elapsed_s": 240,
+    "log_loss": 0.29534024278354826,
+    "markets": 498,
+    "model": "logistic",
+    "rows": 498
+   }
+  ]
+ },
+ "verdict": {
+  "enough_test_markets": true,
+  "logistic_beats_baseline_out_of_sample": false,
+  "logistic_beats_market_price_on_test": false,
+  "note": "Forecast scores only. Economic use is decided by the separate audit.",
+  "preferred_forecast_model": "baseline"
+ }
+}

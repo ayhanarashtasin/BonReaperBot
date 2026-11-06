@@ -17,6 +17,7 @@ from ..risk.kill_switch import KillReason, KillSwitch
 from ..risk.limits import RiskLimits
 from ..risk.pretrade import MarketView, PreTradeRisk
 from ..settings import Settings
+from ..storage.postgres import StoreError
 from ..types import (
     TERMINAL_ORDER_STATES,
     ZERO,
@@ -166,12 +167,18 @@ class Orchestrator:
         if s.scan_pair and now - self._last_scan >= SCAN_INTERVAL_MS:
             self._last_scan = now
             self._scan(spec, view.yes_book, view.no_book, now)
-        if self.kill.active:
-            self.cancel_all(spec.market_id, f"kill:{','.join(self.kill.reasons)}")
-        elif s.passive_quotes and not self._books_unusable(view, now):
-            self._quote(view, now)
-        if s.passive_quotes or s.allow_taker_taker:
-            self._hedge(view, now)
+        try:
+            if self.kill.active:
+                self.cancel_all(spec.market_id, f"kill:{','.join(self.kill.reasons)}")
+            elif s.passive_quotes and not self._books_unusable(view, now):
+                self._quote(view, now)
+            if s.passive_quotes or s.allow_taker_taker:
+                self._hedge(view, now)
+        except (OSError, StoreError) as exc:
+            # The journal could not record an intent, so it was never sent. Nothing proceeds
+            # without durability, and this stays stopped until an operator has looked at it.
+            self.kill.engage(KillReason.STORAGE_FAILURE, now)
+            self.alerts.once("storage_failure", spec.market_id, now, error=type(exc).__name__)
 
     def _scan(self, spec: MarketSpec, yes_book: BookState, no_book: BookState, now: int) -> None:
         s = self.settings.strategies

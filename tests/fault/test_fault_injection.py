@@ -409,3 +409,36 @@ class TestModeSafety:
         assert records and all(r["hypothetical"] for r in records)
         assert all("never happened" in r["uncertainty"] for r in records)
         assert path.read_text().count("hypothetical_order") >= 1
+
+
+class TestStorageFaults:
+    def test_journal_failure_during_a_decision_latches_the_kill_switch(self):
+        """Disk full or database down mid-session: no send, no crash, new risk stopped."""
+        journal = InMemoryJournal()
+        core, factory = healthy_core(journal=journal, settings=paper_settings(passive_quotes=False))
+        settings = paper_settings(passive_quotes=True)
+        core.orchestrator.settings = settings
+
+        def broken(record):
+            raise OSError(28, "No space left on device")
+
+        journal.append = broken
+        before = sends(core)
+        advance(core, factory, 1500)
+        assert sends(core) == before
+        assert core.kill.has(KillReason.STORAGE_FAILURE) and core.kill.latched
+        assert any(a["kind"] == "storage_failure" for a in core.orchestrator.alerts.records)
+
+    def test_postgres_failure_also_latches(self):
+        from bone_reaper.storage.postgres import StoreError
+
+        journal = InMemoryJournal()
+        core, factory = healthy_core(journal=journal, settings=paper_settings(passive_quotes=False))
+        core.orchestrator.settings = paper_settings(passive_quotes=True)
+
+        def broken(record):
+            raise StoreError("transaction failed: OperationalError")
+
+        journal.append = broken
+        advance(core, factory, 1500)
+        assert core.kill.has(KillReason.STORAGE_FAILURE)

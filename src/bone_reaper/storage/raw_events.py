@@ -7,6 +7,7 @@ SHA-256 goes in a JSONL manifest so loaders can detect tampering or truncation.
 from __future__ import annotations
 
 import hashlib
+import heapq
 import json
 import uuid
 from collections import defaultdict
@@ -147,10 +148,16 @@ def load_manifest(root: Path) -> list[ManifestRecord]:
     if not path.exists():
         raise RecorderError(f"no {MANIFEST_NAME} under {root}")
     records = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for index, line in enumerate(lines):
         if not line.strip():
             continue
-        doc: dict[str, Any] = json.loads(line)
+        try:
+            doc: dict[str, Any] = json.loads(line)
+        except json.JSONDecodeError:
+            if index == len(lines) - 1:
+                continue  # A crash mid-append: that part never became part of the record.
+            raise RecorderError(f"corrupt manifest line {index + 1}") from None
         records.append(
             ManifestRecord(
                 path=doc["path"],
@@ -199,19 +206,38 @@ def _read_part(path: Path) -> list[EventEnvelope]:
     return out
 
 
+def _sort_key(env: EventEnvelope) -> tuple[int, str, int, str]:
+    return (env.received_utc_ms, env.segment_id, env.seq, env.event_id)
+
+
 def read_events(
     root: Path, *, verify: bool = True, sources: Iterable[str] | None = None
 ) -> Iterator[EventEnvelope]:
-    """All recorded events in stable arrival order: receive time, then segment and sequence."""
+    """Stream recorded events in stable arrival order: receive time, then segment and sequence.
+
+    Parts are opened only when the merge reaches their time range, so memory follows how many parts
+    overlap in time rather than how much was recorded.
+    """
     records = load_manifest(root)
     if verify:
         problems = verify_manifest(root, records)
         if problems:
             raise RecorderError(f"manifest verification failed: {problems[:5]}")
     wanted = set(sources) if sources is not None else None
-    events: list[EventEnvelope] = []
-    for record in records:
-        if wanted is None or record.source in wanted:
-            events.extend(_read_part(root / record.path))
-    events.sort(key=lambda e: (e.received_utc_ms, e.segment_id, e.seq, e.event_id))
-    return iter(events)
+    pending = sorted(
+        (r for r in records if wanted is None or r.source in wanted),
+        key=lambda r: r.first_received_utc_ms,
+    )
+    heap: list[tuple[tuple[int, str, int, str], int, EventEnvelope]] = []
+    tiebreak = 0
+    next_part = 0
+    while heap or next_part < len(pending):
+        while next_part < len(pending) and (
+            not heap or pending[next_part].first_received_utc_ms <= heap[0][0][0]
+        ):
+            for env in _read_part(root / pending[next_part].path):
+                tiebreak += 1
+                heapq.heappush(heap, (_sort_key(env), tiebreak, env))
+            next_part += 1
+        if heap:
+            yield heapq.heappop(heap)[2]

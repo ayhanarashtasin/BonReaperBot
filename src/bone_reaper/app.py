@@ -38,6 +38,7 @@ from .types import EventEnvelope, MarketSpec, to_jsonable
 LOG = logging.getLogger("bone_reaper.recorder")
 RETIRE_GRACE_MS = 15_000
 RESNAPSHOT_MIN_INTERVAL_MS = 5_000
+DISCOVERY_INTERVAL_S = 10.0
 RESOLUTION_POLL_S = 20.0
 RESOLUTION_MAX_POLLS = 40
 
@@ -153,6 +154,7 @@ class Recorder:
             except Exception as exc:
                 self._gap(f"discovery_failed:{type(exc).__name__}", f"{self.run_id}:discovery")
                 result = None
+            accepted: list[MarketSpec] = []
             if result is not None:
                 for rejection in result.rejected:
                     self._emit(
@@ -161,13 +163,14 @@ class Recorder:
                         topic="market_rejected",
                         segment=f"{self.run_id}:discovery",
                     )
-                self._accept(list(result.accepted), now)
-            self._apply_rollover(self.clock.utc_ms())
+                accepted = list(result.accepted)[:2]
+                self._accept(accepted)
+            self._apply_rollover(accepted, self.clock.utc_ms())
             self.state.rollover_failures = list(self.rollover.failures)
-            await asyncio.sleep(10)
+            await asyncio.sleep(DISCOVERY_INTERVAL_S)
 
-    def _accept(self, specs: list[MarketSpec], now: int) -> None:
-        for spec in specs[:2]:
+    def _accept(self, specs: list[MarketSpec]) -> None:
+        for spec in specs:
             known = self._specs.get(spec.market_id)
             if known is not None:
                 # discover() already rejects changed rules. A tick change is normal venue behaviour
@@ -187,10 +190,10 @@ class Recorder:
             self.books.register(spec.market_id, spec.yes_asset_id, spec.tick_size)
             self.books.register(spec.market_id, spec.no_asset_id, spec.tick_size)
             self._streams[spec.market_id] = asyncio.create_task(self._stream_loop(spec))
-        self.rollover.update(specs[:2], now)
 
-    def _apply_rollover(self, now: int) -> None:
-        for event in self.rollover.update((), now):
+    def _apply_rollover(self, specs: list[MarketSpec], now: int) -> None:
+        """The only caller of rollover.update: its events drive streams and resolution watching."""
+        for event in self.rollover.update(specs, now):
             self._emit(
                 {"event_type": "rollover", **to_jsonable(event)},
                 source=SOURCE_CONTROL,
@@ -485,6 +488,8 @@ class Recorder:
 
     async def run(self, duration_s: float | None = None) -> dict[str, Any]:
         self.out_dir.mkdir(parents=True, exist_ok=True)
+        # Anything between an earlier run and this one was not observed, so say so in the data.
+        self._gap("recorder_started", f"{self.run_id}:control")
         tasks = [
             asyncio.create_task(self._discovery_loop()),
             asyncio.create_task(self._flush_loop()),

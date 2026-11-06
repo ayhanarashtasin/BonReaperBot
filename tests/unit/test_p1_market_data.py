@@ -836,3 +836,83 @@ class TestRecorderFaults:
         doc = json.loads((tmp_path / "health.json").read_text())
         assert doc["run_id"] == final["run_id"] and doc["mode"] == "read_only"
         assert doc["markets_seen"] == 1 and "config_hash" in doc
+
+    def test_retired_market_gets_official_resolution_recorded(
+        self, tmp_path, gamma_upcoming, gamma_closed, monkeypatch
+    ):
+        """Regression: rollover events were consumed before anything could act on them."""
+        import bone_reaper.app as app_module
+
+        monkeypatch.setattr(app_module, "DISCOVERY_INTERVAL_S", 0.01)
+        monkeypatch.setattr(app_module, "RESOLUTION_POLL_S", 0.01)
+
+        async def stream(client, assets):
+            await asyncio.sleep(10)
+            yield {}, 0
+
+        recorder, transport = self._recorder(tmp_path, gamma_upcoming, stream)
+        spec_event = parse(gamma_upcoming)
+
+        async def scenario():
+            run = asyncio.create_task(recorder.run(0.4))
+            await asyncio.sleep(0.1)
+            transport.event_by_slug = _returns(parse(gamma_closed))
+            recorder.clock.set_utc_ms(int(spec_event.schedule.end_date.timestamp() * 1000) + 1)
+            await run
+
+        asyncio.run(scenario())
+        events = list(read_events(tmp_path))
+        kinds = [e.payload().get("kind") for e in events if e.topic == "rollover"]
+        assert "activated" in kinds and "retired" in kinds
+        resolutions = [e for e in events if e.topic == "market_resolution"]
+        assert resolutions and resolutions[0].payload()["closed"] is True
+        assert recorder.state.resolutions
+
+    def test_outcome_is_recorded_before_the_final_price_exists(
+        self, tmp_path, gamma_upcoming, gamma_closed, monkeypatch
+    ):
+        import bone_reaper.app as app_module
+
+        monkeypatch.setattr(app_module, "DISCOVERY_INTERVAL_S", 0.01)
+        monkeypatch.setattr(app_module, "RESOLUTION_POLL_S", 0.01)
+
+        async def stream(client, assets):
+            await asyncio.sleep(10)
+            yield {}, 0
+
+        recorder, transport = self._recorder(tmp_path, gamma_upcoming, stream)
+        spec_event = parse(gamma_upcoming)
+        no_final = copy.deepcopy(gamma_closed)
+        no_final["eventMetadata"] = {"priceToBeat": 75000.0}
+
+        async def scenario():
+            run = asyncio.create_task(recorder.run(0.3))
+            await asyncio.sleep(0.1)
+            transport.event_by_slug = _returns(parse(no_final))
+            recorder.clock.set_utc_ms(int(spec_event.schedule.end_date.timestamp() * 1000) + 1)
+            await run
+
+        asyncio.run(scenario())
+        resolutions = [e for e in read_events(tmp_path) if e.topic == "market_resolution"]
+        assert len(resolutions) == 1, "recorded once now, again only when the final price appears"
+        assert resolutions[0].payload()["final_price"] is None
+        assert resolutions[0].payload()["price_to_beat"] == "75000.0"
+
+    def test_truncated_manifest_tail_is_tolerated_but_corruption_is_not(self, tmp_path):
+        writer = RawEventWriter(tmp_path, run_id="r1")
+        writer.append(EnvelopeFactory().make(book_payload("a", [], [], 1), 1))
+        writer.flush()
+        manifest = tmp_path / "manifest.jsonl"
+        good = manifest.read_text()
+        manifest.write_text(good + '{"path": "cut')
+        assert len(load_manifest(tmp_path)) == 1
+        manifest.write_text('{"path": "cut\n' + good)
+        with pytest.raises(RecorderError):
+            load_manifest(tmp_path)
+
+
+def _returns(value):
+    async def call(*args, **kwargs):
+        return value
+
+    return call

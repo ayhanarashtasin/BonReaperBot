@@ -273,11 +273,11 @@ class TestStrategyVariants:
         assert hedged.allow_negative_edge_risk_hedge and hedged.max_hedge_loss_usd == D(2)
 
     def test_too_few_markets_cannot_grade_as_conclusive(self):
-        metrics = {"markets_unresolved": [], "data": {"gaps": 0}}
+        metrics = {"markets_unresolved": [], "data": {"market_gaps": 0}}
         grade = coverage_grade([make_spec(i) for i in range(5)], metrics, 1000)
         assert grade.startswith("B-")
         assert coverage_grade([], metrics, 0).startswith("F")
-        gappy = {"markets_unresolved": [], "data": {"gaps": 3}}
+        gappy = {"markets_unresolved": [], "data": {"market_gaps": 3}}
         assert coverage_grade([make_spec(0)], gappy, 10).startswith("C")
 
 
@@ -459,3 +459,23 @@ def test_coverage_report_on_recorded_fixture(tmp_path):
     assert report["markets"][0]["resolved"] and report["markets"][0]["price_to_beat"] == "75000"
     assert report["stream_snapshot_validation"]["exact_depth_match"] == 1
     assert json.dumps(report)
+
+
+def test_health_command_surfaces_alerts(tmp_path):
+    from bone_reaper.settings import Settings
+    from bone_reaper.telemetry.health import health_report
+
+    (tmp_path / "health.json").write_text(
+        json.dumps(
+            {
+                "ts_utc_ms": 5,
+                "gaps": 1,
+                "clock_offset_ms": 9000,
+                "rollover_failures": ["x"],
+                "books": {"a": {"age_ms": 50}},
+            }
+        )
+    )
+    codes = {a["code"] for a in health_report(Settings(), tmp_path)["alerts"]}
+    assert {"clock_skew", "rollover_failure", "data_gaps"} <= codes
+    assert "stale_feed" not in codes

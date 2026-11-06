@@ -19,6 +19,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
 from typing import Any
 
 from ..types import BookState, BookValidity, PriceLevel
@@ -28,6 +29,20 @@ DEFAULT_SYNC_GRACE_MS = 2000
 
 def _dec(value: Any) -> Decimal:
     return Decimal(str(value))
+
+
+@lru_cache(maxsize=4096)
+def _price(text: str) -> Decimal:
+    """Prices come from a small set of ticks and arrive hundreds of times a second."""
+    return Decimal(text)
+
+
+@lru_cache(maxsize=16384)
+def _on_tick(price: Decimal, tick: Decimal) -> bool:
+    try:
+        return (price % tick) == 0 and Decimal(0) < price < Decimal(1)
+    except InvalidOperation:
+        return False
 
 
 def _levels(raw: Iterable[Mapping[str, Any]]) -> dict[Decimal, Decimal]:
@@ -55,6 +70,8 @@ class L2Book:
         self.snapshot_count = 0
         self.pruned_levels = 0
         self.sync_entries = 0
+        self._best_bid: Decimal | None = None
+        self._best_ask: Decimal | None = None
 
     def invalidate(self, reason: str) -> None:
         self.validity = BookValidity.INVALID
@@ -74,6 +91,8 @@ class L2Book:
             self.tick_size = tick_size
         self.bids = _levels(bids)
         self.asks = _levels(asks)
+        self._best_bid = max(self.bids) if self.bids else None
+        self._best_ask = min(self.asks) if self.asks else None
         self.book_hash = book_hash
         self.last_snapshot_utc_ms = recv_utc_ms
         self.last_update_utc_ms = recv_utc_ms
@@ -95,11 +114,23 @@ class L2Book:
         if not self._on_tick(price):
             self.invalidate("off_tick_price")
             return
-        levels = self.bids if side == "BUY" else self.asks
-        if size == 0:
-            levels.pop(price, None)
+        if side == "BUY":
+            if size == 0:
+                self.bids.pop(price, None)
+                if price == self._best_bid:
+                    self._best_bid = max(self.bids) if self.bids else None
+            else:
+                self.bids[price] = size
+                if self._best_bid is None or price > self._best_bid:
+                    self._best_bid = price
+        elif size == 0:
+            self.asks.pop(price, None)
+            if price == self._best_ask:
+                self._best_ask = min(self.asks) if self.asks else None
         else:
-            levels[price] = size
+            self.asks[price] = size
+            if self._best_ask is None or price < self._best_ask:
+                self._best_ask = price
 
     def apply_tick_change(self, new_tick: Decimal, recv_utc_ms: int) -> None:
         """The tick moves near price extremes. A coarser tick is repaired by the next snapshot."""
@@ -113,10 +144,7 @@ class L2Book:
             self.last_source_ts_ms = source_ts_ms
 
     def _on_tick(self, price: Decimal) -> bool:
-        try:
-            return (price % self.tick_size) == 0 and Decimal(0) < price < Decimal(1)
-        except InvalidOperation:
-            return False
+        return _on_tick(price, self.tick_size)
 
     def _validate_all(self) -> None:
         for levels in (self.bids, self.asks):
@@ -141,14 +169,25 @@ class L2Book:
         """Bring the book in line with the venue-reported top, or mark it SYNCING."""
         if self.validity not in (BookValidity.READY, BookValidity.SYNCING):
             return
-        if reported_bid is not None:
+        # Only scan the levels when the cached best shows there is something to prune.
+        if (
+            reported_bid is not None
+            and self._best_bid is not None
+            and self._best_bid > reported_bid
+        ):
             for price in [p for p in self.bids if p > reported_bid]:
                 del self.bids[price]
                 self.pruned_levels += 1
-        if reported_ask is not None:
+            self._best_bid = max(self.bids) if self.bids else None
+        if (
+            reported_ask is not None
+            and self._best_ask is not None
+            and self._best_ask < reported_ask
+        ):
             for price in [p for p in self.asks if p < reported_ask]:
                 del self.asks[price]
                 self.pruned_levels += 1
+            self._best_ask = min(self.asks) if self.asks else None
         bid_ok = reported_bid is None or reported_bid == (self.best_bid or Decimal(0))
         ask_ok = reported_ask is None or reported_ask == (self.best_ask or Decimal(1))
         if bid_ok and ask_ok and not self._crossed():
@@ -172,11 +211,11 @@ class L2Book:
 
     @property
     def best_bid(self) -> Decimal | None:
-        return max(self.bids) if self.bids else None
+        return self._best_bid
 
     @property
     def best_ask(self) -> Decimal | None:
-        return min(self.asks) if self.asks else None
+        return self._best_ask
 
     def state(self) -> BookState:
         return BookState(
@@ -288,7 +327,7 @@ class BookManager:
             if book is None:
                 self.unregistered_events += 1
                 continue
-            book.apply_level(str(change["side"]), _dec(change["price"]), _dec(change["size"]))
+            book.apply_level(change["side"], _price(change["price"]), Decimal(change["size"]))
             reported[asset_id] = (change.get("best_bid"), change.get("best_ask"))
         for asset_id, (best_bid, best_ask) in reported.items():
             book = self.books[asset_id]
@@ -296,8 +335,8 @@ class BookManager:
                 continue
             book.touch(recv_utc_ms, source_ts_ms)
             book.reconcile_top(
-                _dec(best_bid) if best_bid is not None else None,
-                _dec(best_ask) if best_ask is not None else None,
+                _price(best_bid) if best_bid is not None else None,
+                _price(best_ask) if best_ask is not None else None,
                 recv_utc_ms,
             )
             result.changed_assets.append(asset_id)

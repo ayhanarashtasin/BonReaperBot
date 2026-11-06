@@ -166,6 +166,7 @@ def compute_metrics(core: SimCore) -> dict[str, Any]:
         },
         "data": {
             "gaps": len(core.gaps),
+            "market_gaps": sum(1 for g in core.gaps if g.get("market_id")),
             "book_invalidations": dict(sorted(core.invalidations.items())),
             "book_validity_at_end": core.book_validity_counts(),
         },

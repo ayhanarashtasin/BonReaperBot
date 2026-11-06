@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 from ..settings import Settings, StrategiesConfig
-from ..storage.raw_events import read_events
+from ..storage.raw_events import RecorderError, load_manifest, read_events, verify_manifest
 from ..types import EventEnvelope, MarketSpec, Mode, from_jsonable
 from .maker_queue import QueueScenario
 from .metrics import compute_metrics, timeline_records
@@ -80,7 +82,7 @@ def load_all(input_dir: Path) -> list[EventEnvelope]:
     return list(read_events(input_dir))
 
 
-def market_specs(events: list[EventEnvelope]) -> list[MarketSpec]:
+def market_specs(events: Iterable[EventEnvelope]) -> list[MarketSpec]:
     specs: dict[str, MarketSpec] = {}
     for env in events:
         if env.topic == "market_spec":
@@ -112,8 +114,20 @@ def chronological_partitions(specs: list[MarketSpec], embargo_markets: int = 1) 
     ]
 
 
-def _period(events: list[EventEnvelope]) -> tuple[int | None, int | None]:
-    return (events[0].received_utc_ms, events[-1].received_utc_ms) if events else (None, None)
+def _dataset_facts(input_dir: Path) -> tuple[list[MarketSpec], int, tuple[int | None, int | None]]:
+    """Specs, event count and period, without loading the events. Also verifies checksums."""
+    records = load_manifest(input_dir)
+    problems = verify_manifest(input_dir, records)
+    if problems:
+        raise RecorderError(f"manifest verification failed: {problems[:5]}")
+    specs = market_specs(read_events(input_dir, verify=False, sources=["control"]))
+    if not records:
+        return specs, 0, (None, None)
+    period = (
+        min(r.first_received_utc_ms for r in records),
+        max(r.last_received_utc_ms for r in records),
+    )
+    return specs, sum(r.rows for r in records), period
 
 
 def coverage_grade(specs: list[MarketSpec], metrics: dict[str, Any], events_total: int) -> str:
@@ -121,8 +135,8 @@ def coverage_grade(specs: list[MarketSpec], metrics: dict[str, Any], events_tota
     resolved = len(specs) - len(metrics["markets_unresolved"])
     if events_total == 0 or not specs:
         return "F: no data"
-    if metrics["data"]["gaps"] > 0:
-        return "C: discontinuities present"
+    if metrics["data"]["market_gaps"] > 0:
+        return "C: discontinuities in market data"
     if resolved < 30:
         return "B-: complete capture but too few markets for any economic conclusion"
     return "B: continuous capture, conclusions still need out-of-sample review"
@@ -133,18 +147,17 @@ def run_replay_command(
 ) -> dict[str, Any]:
     if settings.mode is not Mode.PAPER:
         settings = settings.model_copy(update={"mode": Mode.PAPER})
-    events = load_all(input_dir)
-    specs = market_specs(events)
-    core = replay_events(events, settings, seed=seed)
+    specs, total, period = _dataset_facts(input_dir)
+    core = replay_events(read_events(input_dir, verify=False), settings, seed=seed)
     metrics = compute_metrics(core)
-    grade = coverage_grade(specs, metrics, len(events))
+    grade = coverage_grade(specs, metrics, total)
     manifest = build_manifest(
         "replay",
         input_dir,
         settings,
         seed,
-        coverage=(("markets", str(len(specs))), ("events", str(len(events))), ("grade", grade)),
-        period=_period(events),
+        coverage=(("markets", str(len(specs))), ("events", str(total)), ("grade", grade)),
+        period=period,
         fee_versions=[s.fee.version for s in specs],
         known_gaps=[str(g.get("reason")) for g in core.gaps],
     )
@@ -186,43 +199,91 @@ def _row(name: str, scenario: str, partition: str, m: dict[str, Any]) -> dict[st
     }
 
 
-def run_compare(input_dir: Path, settings: Settings, output_dir: Path, seed: int) -> dict[str, Any]:
-    """Run every strategy under every scenario on all data, then per chronological partition."""
-    events = load_all(input_dir)
-    specs = market_specs(events)
+@dataclass(frozen=True, slots=True)
+class _Job:
+    strategy: str
+    settings: Settings
+    scenario: str
+    partition: str
+    market_ids: frozenset[str] | None
+
+
+def _run_job(job: _Job, input_dir: Path, seed: int) -> dict[str, Any]:
+    """One independent replay. Top-level, so it can run in a worker process."""
+    core = replay_events(
+        read_events(input_dir, verify=False),
+        job.settings,
+        SCENARIOS[job.scenario],
+        seed=seed,
+        strategy_id=job.strategy,
+        market_filter=job.market_ids.__contains__ if job.market_ids is not None else None,
+    )
+    metrics = compute_metrics(core)
+    row = _row(job.strategy, job.scenario, job.partition, metrics)
+    row["_market_gaps"] = metrics["data"]["market_gaps"]
+    row["_markets_unresolved"] = metrics["markets_unresolved"]
+    return row
+
+
+# Scenario coverage per strategy. Queue assumptions do not affect a pure taker route.
+STRATEGY_SCENARIOS = {
+    "scanner_only": ("central",),
+    "taker_pair_research": ("central", "central_2x_latency"),
+    "passive_maker": tuple(SCENARIOS),
+    "passive_constrained_hedge": ("pessimistic", "central", "pessimistic_2x_latency"),
+}
+PARTITIONED_STRATEGIES = ("passive_maker", "passive_constrained_hedge")
+PARTITION_SCENARIOS = ("pessimistic", "central")
+
+
+def compare_jobs(settings: Settings, partitions: list[Partition]) -> list[_Job]:
     variants = strategy_variants(settings)
+    jobs = [
+        _Job(name, variant, scenario, "all", None)
+        for name, variant in variants.items()
+        for scenario in STRATEGY_SCENARIOS[name]
+    ]
+    jobs += [
+        _Job(name, variants[name], scenario, partition.name, partition.market_ids)
+        for name in PARTITIONED_STRATEGIES
+        for scenario in PARTITION_SCENARIOS
+        for partition in partitions
+        if partition.market_ids
+    ]
+    return jobs
+
+
+def run_compare(
+    input_dir: Path, settings: Settings, output_dir: Path, seed: int, workers: int = 1
+) -> dict[str, Any]:
+    """Every strategy under its scenarios on all data, then per chronological partition."""
+    specs, total, period = _dataset_facts(input_dir)
     partitions = chronological_partitions(specs)
-    rows: list[dict[str, Any]] = []
-    grade = "F: no data"
-    for name, variant in variants.items():
-        scenario_names = ["central"] if name == "scanner_only" else list(SCENARIOS)
-        for scenario_name in scenario_names:
-            core = replay_events(
-                events, variant, SCENARIOS[scenario_name], seed=seed, strategy_id=name
-            )
-            metrics = compute_metrics(core)
-            grade = coverage_grade(specs, metrics, len(events))
-            rows.append(_row(name, scenario_name, "all", metrics))
-        for scenario_name in ("pessimistic", "central"):
-            for partition in partitions:
-                if not partition.market_ids or name == "scanner_only":
-                    continue
-                core = replay_events(
-                    events,
-                    variant,
-                    SCENARIOS[scenario_name],
-                    seed=seed,
-                    strategy_id=name,
-                    market_filter=partition.market_ids.__contains__,
-                )
-                rows.append(_row(name, scenario_name, partition.name, compute_metrics(core)))
+    jobs = compare_jobs(settings, partitions)
+    if workers > 1:
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            # map keeps job order, so the report does not depend on which worker finished first.
+            rows = list(pool.map(_run_job, jobs, [input_dir] * len(jobs), [seed] * len(jobs)))
+    else:
+        rows = [_run_job(job, input_dir, seed) for job in jobs]
+    full_run = next(r for r in rows if r["partition"] == "all")
+    grade = coverage_grade(
+        specs,
+        {
+            "markets_unresolved": full_run["_markets_unresolved"],
+            "data": {"market_gaps": full_run["_market_gaps"]},
+        },
+        total,
+    )
+    for row in rows:
+        del row["_market_gaps"], row["_markets_unresolved"]
     manifest = build_manifest(
         "compare",
         input_dir,
         settings,
         seed,
-        coverage=(("markets", str(len(specs))), ("events", str(len(events))), ("grade", grade)),
-        period=_period(events),
+        coverage=(("markets", str(len(specs))), ("events", str(total)), ("grade", grade)),
+        period=period,
         fee_versions=[s.fee.version for s in specs],
     )
     report = {

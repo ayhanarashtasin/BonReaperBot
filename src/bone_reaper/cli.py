@@ -186,7 +186,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
 
     settings = _settings(args, Mode.PAPER)
     _banner(settings, "compare")
-    summary = run_compare(Path(args.input), settings, Path(args.output), args.seed)
+    summary = run_compare(Path(args.input), settings, Path(args.output), args.seed, args.workers)
     _emit({"compare_summary": summary})
     return EXIT_OK
 
@@ -292,6 +292,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--input", required=True)
     p.add_argument("--output", required=True)
     p.add_argument("--seed", type=int, default=7)
+    p.add_argument("--workers", type=int, default=1, help="parallel replays; results are identical")
 
     p = add("paper", cmd_paper, "Live feed, fully simulated orders and fills")
     p.add_argument("--output", default="reports/paper")

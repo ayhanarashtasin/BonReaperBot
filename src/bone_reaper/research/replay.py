@@ -269,8 +269,13 @@ class SimCore:
             source = env.source_ts_ms + self.clock_offset_ms if env.source_ts_ms else recv
             at = recv if live else max(self._exch_time.get(key, 0), min(source, recv))
             self._exch_time[key] = at
-            self.scheduler.at(at, PRIORITY_EXCHANGE, self._on_exchange_event, env)
-        self.scheduler.at(self._visible_time, PRIORITY_VISIBLE, self._on_visible_event, env)
+            payload = env.payload()
+            self.scheduler.at(at, PRIORITY_EXCHANGE, self._on_exchange_event, payload)
+            self.scheduler.at(
+                self._visible_time, PRIORITY_VISIBLE, self._on_visible_event, env, payload
+            )
+            return
+        self.scheduler.at(self._visible_time, PRIORITY_VISIBLE, self._on_visible_event, env, None)
 
     def _heartbeat(self) -> None:
         """Decide on quiet feeds too. A silent stream must trip the kill switch, as it does live."""
@@ -304,10 +309,10 @@ class SimCore:
             self.visible.register(spec.market_id, asset, spec.tick_size)
         self.scheduler.at(spec.end_utc_ms, PRIORITY_TIMER, self._on_market_end, spec)
 
-    def _on_exchange_event(self, env: EventEnvelope) -> None:
-        self.exchange.on_market_event(env.payload(), self.scheduler.now)
+    def _on_exchange_event(self, payload: dict[str, Any]) -> None:
+        self.exchange.on_market_event(payload, self.scheduler.now)
 
-    def _on_visible_event(self, env: EventEnvelope) -> None:
+    def _on_visible_event(self, env: EventEnvelope, parsed: dict[str, Any] | None) -> None:
         self.events_processed += 1
         now = self.scheduler.now
         if env.topic == "gap":
@@ -319,7 +324,7 @@ class SimCore:
         elif (env.source == "poly_market" and env.topic in BOOK_TOPICS) or (
             env.topic == "resnapshot"
         ):
-            result = self.visible.apply(env.payload(), now)
+            result = self.visible.apply(parsed if parsed is not None else env.payload(), now)
             for _asset, reason in result.invalidated:
                 self.invalidations[reason] += 1
             self._decide(now)

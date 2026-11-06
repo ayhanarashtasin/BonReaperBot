@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    # No secrets are provided to this job on purpose. Nothing here can place an order.
+    env:
+      BONE_REAPER_CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.1"
+      - run: uv sync --dev --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src
+      - run: uv run python scripts/check_secrets.py
+      - run: uv run pytest tests/unit tests/property tests/fault tests/integration -q --cov=bone_reaper --cov-report=term
+      - run: uv run bone-reaper --help
+      - run: uv run bone-reaper doctor --config config/read_only.yaml --offline
+      - run: uv run bone-reaper scan --input tests/fixtures/replay --config config/read_only.yaml --report reports/ci/scan.json
+      - run: uv run bone-reaper replay --input tests/fixtures/replay --config config/paper.yaml --output reports/ci/replay

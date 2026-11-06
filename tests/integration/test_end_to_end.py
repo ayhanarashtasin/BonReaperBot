@@ -9,7 +9,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-from helpers import book_payload, change, price_change_payload, trade_payload
 
 from bone_reaper.app import Recorder
 from bone_reaper.cli import main
@@ -29,6 +28,7 @@ from bone_reaper.storage.raw_events import load_manifest, read_events
 from bone_reaper.telemetry.health import coverage_report
 from bone_reaper.time import SystemClock
 from bone_reaper.types import canonical_json
+from helpers import book_payload, change, price_change_payload, trade_payload
 
 ROOT = Path(__file__).parents[2]
 FIXTURE = ROOT / "tests" / "fixtures" / "replay"
@@ -365,7 +365,7 @@ class TestShadowAndPaperLive:
 
     def test_paper_matches_replay_on_the_same_recording(self, gamma_upcoming, tmp_path):
         """Paper and replay run the same decision code: feeding the recording back reproduces it."""
-        core, recorder = self._run(gamma_upcoming, tmp_path, "paper")
+        core, _recorder = self._run(gamma_upcoming, tmp_path, "paper")
         assert type(core.port).__name__ == "PaperExecution"
         assert core.oms.orders, "the live session quoted"
         recorded = list(read_events(tmp_path / "raw"))
@@ -380,7 +380,7 @@ class TestShadowAndPaperLive:
         for env in recorded:
             replayed.schedule_envelope(env, live=True)
             replayed.run_until(env.received_utc_ms)
-        assert {i for i in replayed.oms.orders} == {i for i in core.oms.orders}
+        assert set(replayed.oms.orders) == set(core.oms.orders)
         assert [(o.intent.price, o.intent.size) for o in replayed.oms.orders.values()] == [
             (o.intent.price, o.intent.size) for o in core.oms.orders.values()
         ]
@@ -447,3 +447,20 @@ class TestCliCommands:
         assert (copy / "manifest.jsonl").read_bytes() == before
         assert len(load_manifest(copy)) > 0
         assert canonical_json({"a": 1})
+
+
+def test_parallel_compare_is_identical_to_serial(tmp_path, paper):
+    """Workers change the wall-clock time and nothing else."""
+    run_compare(FIXTURE, paper, tmp_path / "serial", 7, workers=1)
+    run_compare(FIXTURE, paper, tmp_path / "parallel", 7, workers=2)
+    serial = json.loads((tmp_path / "serial" / "compare.json").read_text())
+    parallel = json.loads((tmp_path / "parallel" / "compare.json").read_text())
+    assert serial["rows"] == parallel["rows"]
+
+
+def test_streaming_reader_matches_a_full_sort():
+    streamed = list(read_events(FIXTURE))
+    keys = [(e.received_utc_ms, e.segment_id, e.seq, e.event_id) for e in streamed]
+    assert keys == sorted(keys) and len(streamed) > 1000
+    only_control = list(read_events(FIXTURE, verify=False, sources=["control"]))
+    assert only_control and all(e.source == "control" for e in only_control)

@@ -20,11 +20,10 @@ from pathlib import Path
 ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 
-from helpers import EnvelopeFactory, crypto_fee  # noqa: E402
-
 from bone_reaper.market.rules import rules_hash  # noqa: E402
 from bone_reaper.storage.raw_events import RawEventWriter  # noqa: E402
 from bone_reaper.types import MarketSpec, MarketStatus, MarketVersion, to_jsonable  # noqa: E402
+from helpers import EnvelopeFactory, crypto_fee  # noqa: E402
 
 OUT = ROOT / "tests" / "fixtures" / "replay"
 START = 1_800_000_000_000
