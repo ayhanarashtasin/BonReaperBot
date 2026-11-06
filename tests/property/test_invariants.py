@@ -280,9 +280,9 @@ PARAMS = QuoteParams(
 
 @settings(max_examples=100)
 @given(
-    st.integers(1, 97),
+    st.integers(1, 96),  # With the spread below, an ask stays under 1.00, as L2Book enforces.
     st.integers(1, 3),
-    st.integers(1, 97),
+    st.integers(1, 96),
     st.integers(1, 3),
     st.integers(1, 30_000).map(lambda c: D(c) / 100),
     st.integers(1, 99).map(lambda c: D(c) / 100),
