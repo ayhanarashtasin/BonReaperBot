@@ -15,9 +15,11 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass, field
-from decimal import Decimal
+from decimal import ROUND_CEILING, Decimal
 
 from ..types import ZERO
+
+SHARE_QUANTUM = Decimal("0.000001")
 
 
 class QueueScenario(enum.StrEnum):
@@ -91,5 +93,10 @@ class QueuePosition:
         elif self.scenario is QueueScenario.CENTRAL:
             total = new_size + removed
             if total > 0:
-                self.ahead = max(self.ahead - unexplained * (self.ahead / total), ZERO)
+                progress = unexplained * (self.ahead / total)
+                # The ratio need not terminate. Round our remaining queue up to the token's 6
+                # decimals: conservative, and it keeps every later fill and balance exact.
+                self.ahead = max(self.ahead - progress, ZERO).quantize(
+                    SHARE_QUANTUM, rounding=ROUND_CEILING
+                )
         self.ahead = min(self.ahead, new_size * JOIN_MULTIPLIER[self.scenario])

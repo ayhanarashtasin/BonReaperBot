@@ -345,3 +345,37 @@ def test_gross_exposure_counts_every_open_order(orders):
     assert exposure.open_buy_notional == sum((p * s for _, p, s in orders), D(0))
     # The average cost is a ratio, so allow for its last digit. Risk limits have far wider margins.
     assert exposure.worst_unpaired_notional <= exposure.open_buy_notional + D("1e-20")
+
+
+@given(queue_ops, st.sampled_from(list(QueueScenario)))
+def test_queue_fills_stay_exact_at_token_precision(ops, scenario):
+    """Regression: a proportional queue ratio produced fills that no reservation could release."""
+    position = QueuePosition.join(D("0.40"), D(25), D(100), scenario)
+    for kind, amount in ops:
+        if kind == "trade":
+            fill = position.on_trade_at_price(amount)
+            assert fill == fill.quantize(D("0.000001"))
+        else:
+            position.on_level_size(amount)
+        assert position.ahead == position.ahead.quantize(D("0.000001"))
+        assert position.remaining == position.remaining.quantize(D("0.000001"))
+
+
+def test_awkward_central_ratio_settles_a_reservation_exactly():
+    account = PaperAccount(D(100))
+    intent = make_intent(SPEC, "q", Outcome.YES, "0.41", "10")
+    account.reserve_cash("q", intent.notional, NOW)
+    position = QueuePosition.join(intent.price, intent.size, D(7), QueueScenario.CENTRAL)
+    position.on_level_size(D(3))  # 4/7 removed: 7 - 4 * (7 / 7) style ratios do not terminate.
+    position.on_level_size(D(2))
+    fill = position.on_trade_at_price(D("2.5"))
+    assert fill > 0
+    filled = _fill(1, Outcome.YES, intent.price, fill, False)
+    account.apply_fill(
+        FillRecord(
+            **{**{f: getattr(filled, f) for f in filled.__dataclass_fields__}, "intent_id": "q"}
+        )
+    )
+    assert account.release_reservation("q", NOW) >= 0
+    assert account.cash_reserved == 0
+    assert account.ledger.conservation_errors() == []
