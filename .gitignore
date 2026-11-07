@@ -22,8 +22,8 @@ build/
 
 # Recorded market data and run output (reproducible, potentially large)
 data/
-reports/paper/
-reports/shadow/
+reports/paper*/
+reports/shadow*/
 
 # Assistant tooling folders that are not part of this project
 .agent/

@@ -126,13 +126,40 @@ uv run bone-reaper shadow --config config/shadow.yaml --output reports/shadow --
 
 Both use the live public feed with fully simulated orders. Shadow also writes every hypothetical order
 and fill to `shadow_records.jsonl`, with an explicit uncertainty label. Check `shutdown` in the output:
-`clean: false` lists exactly what was still open or unresolved.
+`clean: false` lists exactly what was still open or unresolved. A session writes `live.json` every 5
+seconds for the dashboard. Ctrl+C ends a session early and still writes the full report.
+
+## 8a. Dashboard
+
+```bash
+uv run bone-reaper dashboard
+```
+
+Open <http://127.0.0.1:8765> and leave it running in its own terminal. Use `--port` if 8765 is taken.
+It refreshes every 5 seconds, so a recording or session started in another terminal appears by itself.
+
+| Page | Shows |
+|---|---|
+| Overview | Readiness verdict, what is running, what needs attention |
+| Recorder | Feed health, books, gaps and alerts for each recording |
+| Sessions | Live and finished runs: equity, open orders, per-market results, integrity checks |
+| Strategies | The comparison matrix, filtered by strategy and data split |
+| Scanner | How many evaluations survived each pair arbitrage check |
+| Forecast | Our models against the market's price, calibration, accuracy over the window |
+| Model audit | The fair-value model's results and its gate |
+| Data quality | Coverage, book validation, gaps and simulator performance |
+
+Research pages read saved reports and do not recalculate. Each shows its source file and when it was
+last written, so rerun `compare`, `scan` or the research scripts to refresh them. The page reads only
+files on this computer. It binds to `127.0.0.1` with no option to change that, has no login, and has no
+route that writes, starts or sends anything. The one outside request is the browser fetching the Fira
+fonts from Google Fonts. Without it the page falls back to system fonts.
 
 ## 9. Stop and emergency actions
 
 | Situation | Action |
 |---|---|
-| Stop any command | Ctrl+C. Flushed parts are safe. Check `health.json` afterwards. |
+| Stop any command | Ctrl+C. Flushed parts are safe. Paper and shadow still write their report. |
 | Kill switch active (paper) | Read `safety.kill_events`. Transient reasons clear when the condition does. |
 | Latched kill (`loss_cap`, `reconciliation_mismatch`, `storage_failure`, `operator`) | Only `KillSwitch.operator_reset(ts, operator)` clears these. Find the cause first. |
 | Disk full | The recorder stops with `RecorderError` rather than recording with gaps silently. Free space and restart. |

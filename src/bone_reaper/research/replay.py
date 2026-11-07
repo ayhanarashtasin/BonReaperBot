@@ -18,7 +18,7 @@ from ..accounting.pnl import realized_total
 from ..accounting.position import PaperAccount
 from ..connectors.polymarket_twap import ReferenceTracker
 from ..execution.factory import build_execution
-from ..execution.oms import InMemoryJournal, Journal, OrderManager
+from ..execution.oms import Journal, OrderManager, build_journal
 from ..execution.paper import (
     PRIORITY_EXCHANGE,
     PRIORITY_TIMER,
@@ -141,7 +141,7 @@ class SimCore:
         self.limits = RiskLimits.from_settings(settings)
         self.specs: dict[str, MarketSpec] = {}
         self.reference = ReferenceTracker("btcusd")
-        self.journal: Journal = journal or InMemoryJournal()
+        self.journal: Journal = journal or build_journal(settings)
         self._decision_ids = 0
         self.port = self._build_port(shadow_path)
         self.risk = PreTradeRisk(
@@ -195,6 +195,7 @@ class SimCore:
         self._exch_time: dict[str, int] = {}
         self._visible_time = 0
         self._sampler_started = False
+        self._next_sample_ms = 0
         self._heartbeat_started = False
         self._next_heartbeat: int | None = None
         self._last_mark: dict[str, Decimal] = {}
@@ -245,7 +246,9 @@ class SimCore:
 
     def schedule_envelope(self, env: EventEnvelope, *, live: bool = False) -> None:
         recv = env.received_utc_ms
-        if not self._sampler_started:
+        # A live feed outruns the sampler after every sample. Waiting until the next one is due
+        # stops it sampling once per event, which overstates sampled time and grows without limit.
+        if not self._sampler_started and recv >= self._next_sample_ms:
             self._sampler_started = True
             self.scheduler.at(recv, PRIORITY_TIMER, self._sample_equity)
         self._last_data_ms = max(self._last_data_ms, recv)
@@ -474,8 +477,9 @@ class SimCore:
         self._sampled_ms += EQUITY_SAMPLE_MS
         if exposed:
             self._exposed_ms += EQUITY_SAMPLE_MS
-        if now + EQUITY_SAMPLE_MS <= self._last_data_ms:
-            self.scheduler.at(now + EQUITY_SAMPLE_MS, PRIORITY_TIMER, self._sample_equity)
+        self._next_sample_ms = now + EQUITY_SAMPLE_MS
+        if self._next_sample_ms <= self._last_data_ms:
+            self.scheduler.at(self._next_sample_ms, PRIORITY_TIMER, self._sample_equity)
         else:
             self._sampler_started = False
 

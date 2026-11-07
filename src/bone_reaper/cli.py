@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import json
 import os
 import sys
+import threading
+import webbrowser
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
 from . import __version__
-from .settings import ConfigError, Settings, allowed_network_actions, load_settings
+from .settings import ConfigError, Settings, allowed_network_actions, load_settings, parse_settings
 from .types import Mode, to_jsonable
 
 EXIT_OK = 0
@@ -215,6 +218,87 @@ def cmd_shadow(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_dashboard(args: argparse.Namespace) -> int:
+    from .dashboard.server import make_server
+
+    settings = _settings(args)
+    _banner(settings, "dashboard")
+    try:
+        server = make_server(Path(args.root), settings, args.port)
+    except OSError as exc:
+        print(f"could not start on port {args.port}: {exc}. Try --port.", file=sys.stderr)
+        return EXIT_FAILURE
+    host, port = server.server_address[:2]
+    print(f"Dashboard: http://{host!s}:{port} (read-only, this computer only). Ctrl+C stops it.")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return EXIT_OK
+
+
+def cmd_start(args: argparse.Namespace) -> int:
+    from .dashboard.server import make_server
+    from .live_sim import run_live_sim
+
+    if getattr(args, "config", None):
+        settings = load_settings(args.config)
+    elif Path("config/paper.yaml").exists():
+        settings = load_settings("config/paper.yaml")
+    else:
+        settings = parse_settings({"mode": "paper", "strategies": {"passive_quotes": True}})
+    if settings.mode is Mode.LIVE:
+        return cmd_live(args)
+    _banner(settings, "start")
+    try:
+        server = make_server(Path(args.root), settings, args.port)
+    except OSError:
+        if args.port == 0:
+            raise
+        server = make_server(Path(args.root), settings, 0)
+    host, port = server.server_address[:2]
+    url = f"http://{host!s}:{port}"
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    print(f"Dashboard: {url} (read-only, this computer only). Ctrl+C stops bot and dashboard.")
+    if not args.no_browser:
+        with contextlib.suppress(Exception):
+            webbrowser.open(url)
+    try:
+        if settings.mode in (Mode.PAPER, Mode.SHADOW):
+            result = asyncio.run(run_live_sim(settings, Path(args.output), args.seconds))
+            _emit({settings.mode.value: result, "dashboard_url": url})
+        else:
+            from .app import Recorder
+            from .connectors.polymarket_public import ReadOnlyTransport
+            from .logging import configure
+            from .market.rules import get_instrument
+
+            configure()
+            instrument = get_instrument(
+                settings.markets.symbols[0], settings.markets.durations_minutes[0]
+            )
+            out = Path(args.output or settings.storage.raw_dir)
+
+            async def record_only() -> dict[str, Any]:
+                transport = ReadOnlyTransport()
+                try:
+                    recorder = Recorder(settings, instrument, out, transport=transport)
+                    return await recorder.run(args.seconds)
+                finally:
+                    await transport.close()
+
+            _emit({"record_final_health": asyncio.run(record_only()), "dashboard_url": url})
+    except KeyboardInterrupt:
+        print("stopped by operator; see dashboard/reports for final state", file=sys.stderr)
+    finally:
+        server.shutdown()
+        server.server_close()
+    return EXIT_OK
+
+
 def cmd_reconcile(args: argparse.Namespace) -> int:
     settings = _settings(args)
     _banner(settings, "reconcile")
@@ -249,8 +333,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=__version__)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    def add(name: str, handler: Any, help_text: str) -> argparse.ArgumentParser:
-        command = sub.add_parser(name, help=help_text)
+    def add(
+        name: str, handler: Any, help_text: str, *, aliases: Sequence[str] = ()
+    ) -> argparse.ArgumentParser:
+        command = sub.add_parser(name, aliases=list(aliases), help=help_text)
         command.set_defaults(handler=handler)
         command.add_argument("--config", help="YAML config path")
         return command
@@ -283,7 +369,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--report", required=True)
     p.add_argument("--max-events", type=int)
 
-    p = add("replay", cmd_replay, "Deterministic event replay with simulated execution")
+    p = add(
+        "replay",
+        cmd_replay,
+        "Deterministic event replay with simulated execution",
+        aliases=("backtest",),
+    )
     p.add_argument("--input", required=True)
     p.add_argument("--output", required=True)
     p.add_argument("--seed", type=int, default=7)
@@ -301,6 +392,18 @@ def build_parser() -> argparse.ArgumentParser:
     p = add("shadow", cmd_shadow, "Live feed, hypothetical fills recorded, no network orders")
     p.add_argument("--output", default="reports/shadow")
     p.add_argument("--seconds", type=float)
+
+    p = add("dashboard", cmd_dashboard, "Local read-only dashboard over reports and status files")
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--root", default=".", help="project folder holding reports/ and data/")
+
+    p = add("start", cmd_start, "Start bot session and local read-only dashboard together")
+    p.add_argument("target", nargs="?", default="bone", help=argparse.SUPPRESS)
+    p.add_argument("--output", default="reports/paper")
+    p.add_argument("--seconds", type=float)
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--root", default=".", help="project folder holding reports/ and data/")
+    p.add_argument("--no-browser", action="store_true", help="do not open browser automatically")
 
     p = add("reconcile", cmd_reconcile, "Exchange reconciliation (needs authorized access)")
     p.add_argument("--dry-run", action="store_true")

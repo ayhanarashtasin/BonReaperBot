@@ -118,7 +118,12 @@ class PostgresStore:
                    VALUES (%s,%s,%s,%s,'reserved')""",
                 (f"res:{intent.intent_id}", intent.intent_id, "pUSD", reservation_amount),
             )
-            self._journal(cur, "intent", ts_utc_ms, to_jsonable(intent))
+            self._journal(
+                cur,
+                "intent",
+                ts_utc_ms,
+                {"kind": "intent", "ts_utc_ms": ts_utc_ms, "intent": to_jsonable(intent)},
+            )
             if fail_after:  # Fault-injection hook used by the atomicity test.
                 raise self._psycopg.OperationalError("injected failure")
 
@@ -167,7 +172,12 @@ class PostgresStore:
                         entry.reversal_of,
                     ),
                 )
-            self._journal(cur, "fill", fill.ts_utc_ms, to_jsonable(fill))
+            self._journal(
+                cur,
+                "fill",
+                fill.ts_utc_ms,
+                {"kind": "fill", "ts_utc_ms": fill.ts_utc_ms, "fill": to_jsonable(fill)},
+            )
             return True
 
     def _journal(self, cur: Any, kind: str, ts_utc_ms: int, body: Any) -> None:

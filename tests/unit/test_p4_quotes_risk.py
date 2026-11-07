@@ -236,6 +236,30 @@ class TestRefresh:
     def test_target_gone_cancels_even_if_young(self):
         assert needs_refresh(self.order(created=NOW), None, D("0.01"), self.RULES, NOW)
 
+    def test_orchestrator_refresh_uses_live_book_tick(self):
+        from bone_reaper.research.replay import SimCore
+
+        core = SimCore(paper_settings(refresh_min_ticks=2, refresh_min_age_ms=1000), seed=1)
+        core.specs[SPEC.market_id] = SPEC
+        fine_yes = replace(
+            book_state(Y, (("0.945", "100"),), (("0.955", "100"),), now=NOW, tick="0.001"),
+            tick_size=D("0.001"),
+        )
+        fine_no = replace(
+            book_state(N, (("0.045", "100"),), (("0.055", "100"),), now=NOW, tick="0.001"),
+            tick_size=D("0.001"),
+        )
+        view = MarketView(SPEC, fine_yes, fine_no, None, SPEC.rules_hash)
+        core.clock.set_utc_ms(NOW)
+        existing = make_intent(
+            SPEC, "q-yes", Outcome.YES, "0.930", "10", purpose=IntentPurpose.PASSIVE_QUOTE
+        )
+        core.oms.orders[existing.intent_id] = OrderRecord(
+            intent=existing, state=OrderState.OPEN, created_utc_ms=NOW - 5000
+        )
+        core.orchestrator._quote(view, NOW)
+        assert core.oms.orders["q-yes"].state in (OrderState.CANCEL_PENDING, OrderState.CANCELED)
+
 
 POLICY = HedgePolicy(
     min_profit_per_pair=D("0.005"),

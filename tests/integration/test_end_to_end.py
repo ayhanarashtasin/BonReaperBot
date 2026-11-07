@@ -413,6 +413,41 @@ class TestShadowAndPaperLive:
         assert (tmp_path / "metrics.json").exists()
         doc = json.loads((tmp_path / "metrics.json").read_text())
         assert doc["shutdown"]["freeze_reasons"] == [] or not doc["shutdown"]["clean"]
+        snapshot = json.loads((tmp_path / "live.json").read_text())
+        assert snapshot["running"] is False and snapshot["simulated"] is True
+        assert snapshot["metrics"]["checksum"]
+
+    def test_ctrl_c_still_ends_with_a_full_report(self, gamma_upcoming, tmp_path, monkeypatch):
+        import bone_reaper.live_sim as live
+
+        event = _live_event(gamma_upcoming)
+        _fake_stream_factory.condition = event.markets[0].condition_id
+        real_recorder = live.Recorder
+
+        def recorder_with_fakes(settings, instrument, out, *, transport):
+            return real_recorder(
+                settings,
+                instrument,
+                out,
+                transport=FakeLiveTransport(event),
+                enable_twap=False,
+                market_stream=_fake_stream_factory,
+            )
+
+        monkeypatch.setattr(live, "Recorder", recorder_with_fakes)
+        monkeypatch.setattr(live, "ReadOnlyTransport", lambda: FakeLiveTransport(event))
+        settings = parse_settings({"mode": "paper", "strategies": {"passive_quotes": True}})
+
+        async def stop_part_way():
+            session = asyncio.create_task(run_live_sim(settings, tmp_path, None))
+            await asyncio.sleep(1.0)
+            session.cancel()
+            return await session
+
+        result = asyncio.run(stop_part_way())
+        assert "clean" in result["shutdown"]
+        assert (tmp_path / "metrics.json").exists()
+        assert json.loads((tmp_path / "live.json").read_text())["running"] is False
 
     def test_live_sim_refuses_read_only(self, tmp_path):
         with pytest.raises(ValueError):

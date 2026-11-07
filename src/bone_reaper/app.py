@@ -30,6 +30,7 @@ from .market.discovery import discover
 from .market.rollover import RolloverController
 from .market.rules import Instrument
 from .settings import Settings
+from .storage.atomic import atomic_write_text
 from .storage.checkpoints import Checkpoint, CheckpointWriter
 from .storage.raw_events import RawEventWriter
 from .time import Clock, SystemClock
@@ -71,6 +72,7 @@ class Recorder:
         enable_twap: bool = True,
         enable_binance: bool = False,
         market_stream: Callable[..., AsyncIterator[tuple[dict[str, Any], int]]] = stream_market,
+        twap_source: Any = None,
     ) -> None:
         self.settings = settings
         self.instrument = instrument
@@ -80,6 +82,7 @@ class Recorder:
         self.enable_twap = enable_twap
         self.enable_binance = enable_binance
         self._market_stream = market_stream
+        self._twap_source = twap_source
         self.run_id = uuid.uuid4().hex[:12]
         self.writer = RawEventWriter(out_dir, symbol=instrument.symbol, run_id=self.run_id)
         self.checkpoints = CheckpointWriter(out_dir / "checkpoints" / f"{self.run_id}.jsonl")
@@ -373,7 +376,9 @@ class Recorder:
             await asyncio.sleep(60)
 
     async def _twap_loop(self) -> None:
-        source = RtdsTwapSource(self.transport.client, self.instrument.rtds_symbol)
+        source = self._twap_source or RtdsTwapSource(
+            self.transport.client, self.instrument.rtds_symbol
+        )
         attempt = 0
         while True:
             attempt += 1
@@ -463,10 +468,10 @@ class Recorder:
         return ([self.rollover.active] if self.rollover.active else []) + self.rollover.prepared
 
     def _write_health(self) -> None:
-        path = self.out_dir / "health.json"
-        temp = path.with_suffix(".tmp")
-        temp.write_text(json.dumps(self.health_document(), indent=1, sort_keys=True), "utf-8")
-        temp.replace(path)
+        atomic_write_text(
+            self.out_dir / "health.json",
+            json.dumps(self.health_document(), indent=1, sort_keys=True),
+        )
 
     async def _flush_loop(self) -> None:
         interval = self.settings.storage.flush_interval_seconds

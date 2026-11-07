@@ -250,11 +250,12 @@ class Orchestrator:
                 if o.intent.outcome is outcome and o.intent.purpose is IntentPurpose.PASSIVE_QUOTE
             ]
             target = targets.get(outcome)
+            own_book = view.yes_book if outcome is Outcome.YES else view.no_book
             if existing:
                 # Replace only after the old order is confirmed gone: it still reserves funds.
                 for order in existing:
                     if order.state in (OrderState.OPEN, OrderState.PARTIALLY_FILLED):
-                        if needs_refresh(order, target, spec.tick_size, self.refresh, now):
+                        if needs_refresh(order, target, own_book.tick_size, self.refresh, now):
                             self.oms.cancel(order.intent.intent_id, "refresh")
                 continue
             if target is not None:

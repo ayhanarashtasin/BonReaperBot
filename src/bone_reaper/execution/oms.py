@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from ..accounting.position import PaperAccount
+from ..settings import Settings
 from ..strategy.fees import fee_usd
 from ..time import Clock
 from ..types import (
@@ -85,6 +86,23 @@ class FileJournal:
         if not self.path.exists():
             return []
         return [json.loads(line) for line in self.path.read_text("utf-8").splitlines() if line]
+
+
+def build_journal(settings: Settings) -> Journal:
+    ledger = settings.storage.ledger
+    if ledger == "memory":
+        return InMemoryJournal()
+    if ledger == "sqlite":
+        return FileJournal(Path(settings.storage.journal_path))
+    from ..storage.postgres import PostgresStore, StoreError
+
+    dsn = os.environ.get(settings.storage.postgres_dsn_env)
+    if not dsn:
+        raise StoreError(f"missing environment variable {settings.storage.postgres_dsn_env}")
+    store = PostgresStore(dsn, wallet_id=settings.mode.value)
+    store.migrate()
+    store.require_writer()
+    return store
 
 
 class RiskGate(Protocol):
@@ -187,9 +205,13 @@ class OrderManager:
         record = replace(record, intent=intent)
         self.orders[intent.intent_id] = record
         # Journal before reserving and before send: a crash here leaves evidence, not a lost order.
-        self._journal("intent", intent=intent)
+        reservation = self._reservation_amount(intent) if intent.side is Side.BUY else intent.size
+        if hasattr(self.journal, "record_intent"):
+            self.journal.record_intent(intent, reservation, now)
+        else:
+            self._journal("intent", intent=intent)
         if intent.side is Side.BUY:
-            self.account.reserve_cash(intent.intent_id, self._reservation_amount(intent), now)
+            self.account.reserve_cash(intent.intent_id, reservation, now)
         else:
             self.account.reserve_shares(intent.intent_id, intent.asset_id, intent.size, now)
         record = self._transition(record, S.PREPARED)
@@ -299,8 +321,12 @@ class OrderManager:
             return False
         self._fill_ids.add(fill.identity)
         fill = replace(fill, intent_id=intent_id)
-        self._journal("fill", fill=fill)
+        entries_before = len(self.account.ledger.entries)
         self.account.apply_fill(fill)
+        if hasattr(self.journal, "record_fill"):
+            self.journal.record_fill(fill, self.account.ledger.entries[entries_before:])
+        else:
+            self._journal("fill", fill=fill)
         record = self.orders[intent_id]
         matched = record.matched_gross + fill.gross_shares
         if record.state in TERMINAL_ORDER_STATES:

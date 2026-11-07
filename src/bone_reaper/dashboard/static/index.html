@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bone Reaper dashboard</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand">
+        <img src="/favicon.svg" alt="" width="28" height="28">
+        <span>Bone Reaper</span>
+      </div>
+      <nav id="nav" aria-label="Sections"></nav>
+      <div class="side-foot" id="side-foot"></div>
+    </aside>
+    <div class="main-col">
+      <header class="top">
+        <div class="top-title">
+          <h1 id="view-title">Loading</h1>
+          <p id="view-sub"></p>
+        </div>
+        <div class="top-actions">
+          <span id="updated" class="updated"></span>
+          <button id="pause" class="icon-btn" type="button"></button>
+          <button id="theme" class="icon-btn icon-only" type="button"></button>
+        </div>
+      </header>
+      <div class="sim-banner" role="note" id="sim-banner"></div>
+      <div class="offline" id="offline" role="status" hidden></div>
+      <main id="main" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+  <script src="/app.js"></script>
+</body>
+</html>

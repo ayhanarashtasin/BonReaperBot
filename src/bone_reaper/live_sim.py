@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
+import logging
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -20,10 +22,16 @@ from .research.metrics import compute_metrics
 from .research.replay import SimCore
 from .research.reports import write_json
 from .settings import Settings
-from .types import EventEnvelope, Mode
+from .storage.atomic import atomic_write_text
+from .types import EventEnvelope, Mode, to_jsonable
 
 PUMP_INTERVAL_S = 0.2
 SHUTDOWN_SETTLE_MS = 2000
+SNAPSHOT_INTERVAL_S = 5.0
+SNAPSHOT_EQUITY_POINTS = 720  # One hour at the five-second sampling interval.
+LIVE_SNAPSHOT_FILE = "live.json"
+
+LOG = logging.getLogger("bone_reaper.live_sim")
 
 
 def attach_core(recorder: Recorder, core: SimCore) -> Callable[[EventEnvelope], None]:
@@ -35,13 +43,81 @@ def attach_core(recorder: Recorder, core: SimCore) -> Callable[[EventEnvelope], 
     return tap
 
 
-async def _pump(core: SimCore, recorder: Recorder) -> None:
+def live_snapshot(
+    core: SimCore, now_utc_ms: int, *, started_utc_ms: int, running: bool
+) -> dict[str, Any]:
+    """What a viewer needs to follow a session. Reads the core and changes nothing in it."""
+    active = core._active_spec(now_utc_ms)
+    market: dict[str, Any] | None = None
+    if active is not None:
+        sides = {}
+        for outcome, asset in (("YES", active.yes_asset_id), ("NO", active.no_asset_id)):
+            book = core.visible.books.get(asset)
+            state = book.state() if book is not None else None
+            sides[outcome] = {
+                "bid": state.best_bid if state else None,
+                "ask": state.best_ask if state else None,
+                "validity": state.validity.value if state else None,
+            }
+        market = {
+            "market_id": active.market_id,
+            "slug": active.slug,
+            "start_utc_ms": active.start_utc_ms,
+            "end_utc_ms": active.end_utc_ms,
+            "sides": sides,
+        }
+    return {
+        "simulated": True,
+        "running": running,
+        "mode": core.settings.mode.value,
+        "ts_utc_ms": now_utc_ms,
+        "started_utc_ms": started_utc_ms,
+        "active_market": market,
+        "open_orders": [
+            {
+                "intent_id": order.intent.intent_id,
+                "outcome": order.intent.outcome,
+                "side": order.intent.side,
+                "price": order.intent.price,
+                "size": order.intent.size,
+                "matched": order.matched_gross,
+                "state": order.state,
+                "purpose": order.intent.purpose,
+            }
+            for order in core.oms.open_orders
+        ],
+        "equity_curve": [
+            [point["ts_utc_ms"], point["equity"]]
+            for point in core.timeline[-SNAPSHOT_EQUITY_POINTS:]
+        ],
+        "metrics": compute_metrics(core),
+    }
+
+
+def _write_snapshot(core: SimCore, output_dir: Path, started: int, *, running: bool) -> None:
+    """Observing a session must never stop it, so a failure here is logged and skipped."""
+    try:
+        doc = live_snapshot(core, core.scheduler.now, started_utc_ms=started, running=running)
+        atomic_write_text(
+            output_dir / LIVE_SNAPSHOT_FILE,
+            json.dumps(to_jsonable(doc), indent=1, sort_keys=True),
+        )
+    except Exception:
+        LOG.exception("live snapshot skipped")
+
+
+async def _pump(core: SimCore, recorder: Recorder, output_dir: Path, started: int) -> None:
     """Advance simulated time when the feed is quiet, so timers and staleness checks still run."""
+    next_snapshot = started
     while True:
         await asyncio.sleep(PUMP_INTERVAL_S)
-        core.run_until(recorder.clock.utc_ms())
+        now = recorder.clock.utc_ms()
+        core.run_until(now)
         # Decisions run on quiet feeds too, or a silent stream would never trip the kill switch.
         core._decide(core.scheduler.now)
+        if now >= next_snapshot:
+            next_snapshot = now + int(SNAPSHOT_INTERVAL_S * 1000)
+            _write_snapshot(core, output_dir, started, running=True)
 
 
 def shutdown_orders(core: SimCore, now_utc_ms: int) -> None:
@@ -73,9 +149,13 @@ async def run_live_sim(
         transport=transport,
     )
     attach_core(recorder, core)
-    pump = asyncio.create_task(_pump(core, recorder))
+    started = recorder.clock.utc_ms()
+    _write_snapshot(core, output_dir, started, running=True)
+    pump = asyncio.create_task(_pump(core, recorder, output_dir, started))
     try:
-        await recorder.run(seconds)
+        # Ctrl+C is the documented way to stop, so it still ends with a full report.
+        with contextlib.suppress(asyncio.CancelledError):
+            await recorder.run(seconds)
     finally:
         pump.cancel()
         with contextlib.suppress(asyncio.CancelledError):
@@ -91,6 +171,7 @@ async def run_live_sim(
         "unresolved_positions": sorted(core.unresolved),
     }
     write_json(output_dir / "metrics.json", metrics)
+    _write_snapshot(core, output_dir, started, running=False)
     return {
         "output": str(output_dir),
         "mode": settings.mode.value,

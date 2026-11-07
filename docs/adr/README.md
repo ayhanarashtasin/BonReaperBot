@@ -120,3 +120,20 @@ file can produce them.
 
 **Decision.** A variant counts only if it used the model in at least half of its decisions, beat the midpoint in every
 scenario, and made a profit in every scenario. Even then the model stays disabled until an operator enables it.
+
+## ADR-0015: A read-only dashboard
+
+**Context.** The PRD does not require a web dashboard for the first release. The operator asked for one to see
+everything in one place.
+
+**Decision.** `bone-reaper dashboard` is a standard-library HTTP server with one page and no new dependencies. It binds
+to `127.0.0.1` as a constant, refuses other `Host` names, serves a fixed list of GET paths, and has no write route. It
+shows reports as written and marks anything missing as unavailable. The verdict is parsed from the readiness memo, and
+the live-trading blocks come from `live_gate_reasons`, so the page cannot disagree with either.
+
+**Live view.** Paper and shadow sessions write `live.json` every 5 seconds. A failed snapshot is logged and skipped,
+because observing a session must never stop it, and a test confirms that taking snapshots leaves the metrics checksum
+unchanged.
+
+**Accepted.** The browser fetches Fira fonts from Google Fonts, as the chosen design system specifies. It is the page's
+only outside request, carries no project data, and falls back to system fonts.

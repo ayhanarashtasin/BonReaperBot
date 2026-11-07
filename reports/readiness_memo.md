@@ -123,7 +123,9 @@ lead here, and a 34-market sample cannot tell whether it is real.
 | Tests | 525 passing, 91% coverage, `ruff` and `mypy --strict` clean |
 
 The paper session reported `clean: false`, because one order was still in flight at stop. That reporting was
-correct. The cause, cancelling before the ACK landed, was then fixed and tested. The session was not repeated.
+correct. The cause, cancelling before the ACK landed, was then fixed and tested. A later 90-second paper session on the
+live feed reported `clean: true` (`reports/paper_livecheck`). That is one short session, so it confirms the fix, not the
+strategy.
 
 ## What this does not establish
 

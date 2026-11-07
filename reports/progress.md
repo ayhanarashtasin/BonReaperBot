@@ -137,3 +137,20 @@ Fixtures alone would not have shown any of these.
 - Public TWAP shuts down 2026-11-30 (ADR-0008).
 - This machine's clock runs about 800 ms fast (ADR-0007).
 - Paper and shadow details in `reports/paper` and `reports/shadow` are local only, not in git.
+
+## After the readiness memo: dashboard
+
+Added `bone-reaper dashboard` at the operator's request (ADR-0015). Building it found three defects, all now fixed with
+regression tests.
+
+| Defect | Found by | Effect if missed |
+|---|---|---|
+| Live sessions took an equity sample per event, not every 5 s | Sample count equal to event count; 280 hours "sampled" in 11 minutes | Memory grows with every event; exposure-time figures in `reports/paper` and `reports/shadow` are overstated |
+| Replacing `health.json` fails on Windows while a reader has it open | Reviewing the write path before polling it | A dashboard or `health` read could stop a recording |
+| Ctrl+C on a paper or shadow session lost the final report | Reviewing the shutdown path | The documented way to stop left no report |
+
+Checks after these changes: full test suite passing at 92% coverage, `ruff` and `mypy --strict` clean, secret scan clean.
+The full replay of the 5.6M events gives the same metrics checksum as before (`c3db45c0...`), so the sampler fix does
+not change any research result. A 90-second live paper session took 18 equity samples and reported `clean: true`.
+Exposure-time fields in the older `reports/paper` and `reports/shadow` metrics are overstated by the sampler defect, so
+the dashboard does not display them.

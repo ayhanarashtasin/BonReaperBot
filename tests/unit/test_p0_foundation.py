@@ -319,6 +319,42 @@ class TestCli:
         assert main(["reconcile"]) == 2
         assert main(["reconcile", "--dry-run"]) == 0
 
+    def test_start_command_wires_dashboard_and_bot(self, capsys, tmp_path, monkeypatch):
+        import bone_reaper.dashboard.server as dash_server
+        import bone_reaper.live_sim as live_sim
+
+        events: list[str] = []
+
+        class FakeServer:
+            server_address = ("127.0.0.1", 8765)
+
+            def serve_forever(self) -> None:
+                events.append("served")
+
+            def shutdown(self) -> None:
+                events.append("shutdown")
+
+            def server_close(self) -> None:
+                events.append("closed")
+
+        async def fake_run(settings, out_dir, seconds):
+            events.append(f"bot:{settings.mode.value}")
+            return {"mode": settings.mode.value, "output": str(out_dir)}
+
+        def fake_asyncio_run(coro):
+            coro.close()
+            events.append("bot:paper")
+            return {"mode": "paper", "output": str(tmp_path)}
+
+        monkeypatch.setattr(dash_server, "make_server", lambda *a, **kw: FakeServer())
+        monkeypatch.setattr(live_sim, "run_live_sim", fake_run)
+        monkeypatch.setattr("bone_reaper.cli.asyncio.run", fake_asyncio_run)
+        assert main(["start", "bone", "--no-browser", "--output", str(tmp_path)]) == 0
+        out = capsys.readouterr().out
+        assert "http://127.0.0.1:8765" in out and "bot:paper" in events
+        assert "shutdown" in events and "closed" in events
+        assert main(["start", "--config", str(ROOT / "config/live.example.yaml")]) == 1
+
 
 class TestLogRedaction:
     def test_secrets_are_redacted(self):

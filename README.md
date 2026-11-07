@@ -43,6 +43,20 @@ uv run bone-reaper scan --input tests/fixtures/replay --config config/read_only.
 uv run bone-reaper replay --input tests/fixtures/replay --config config/paper.yaml --output reports/replay
 ```
 
+To start the paper bot and the local dashboard together (and open <http://127.0.0.1:8765> automatically):
+
+```bash
+.\bone
+# or: start .\bone.cmd
+# or: uv run bone-reaper start
+```
+
+To run only the read-only dashboard over existing reports at <http://127.0.0.1:8765>:
+
+```bash
+uv run bone-reaper dashboard
+```
+
 The full operating guide is [docs/runbook.md](docs/runbook.md). No credentials are needed for any of it.
 
 ## Modes
@@ -67,6 +81,7 @@ The full operating guide is [docs/runbook.md](docs/runbook.md). No credentials a
 | `replay` | Deterministic simulation with reproducibility manifest |
 | `compare` | Strategy and sensitivity matrix with chronological partitions |
 | `paper` / `shadow` | Live feed with simulated orders |
+| `dashboard` | Read-only browser view of reports and running sessions, on this computer only |
 | `reconcile --dry-run` | Reports `NOT_RUN`: needs blocked account access |
 | `live` | Always refuses |
 
@@ -83,6 +98,7 @@ src/bone_reaper/
   storage/      Parquet recorder, checkpoints, Postgres store
   research/     replay, fill models, metrics, experiments, probability
   telemetry/    health and alerts
+  dashboard/    local read-only web page over reports and status files
 tests/          unit, property, fault, integration (all offline)
 docs/           runbook and ADRs
 reports/        SDK audit, research reports, readiness memo

@@ -766,3 +766,46 @@ def test_ledger_reserved_account_named_consistently():
     account = PaperAccount(D(5))
     account.reserve_cash("a", D(2), 1)
     assert account.ledger.balance(CASH_RESERVED) == D(2)
+
+
+def test_build_journal_and_store_backed_oms_roundtrip(tmp_path, monkeypatch):
+    from bone_reaper.execution.oms import build_journal
+    from bone_reaper.settings import parse_settings
+    from bone_reaper.storage.postgres import StoreError
+    from bone_reaper.types import to_jsonable
+
+    assert isinstance(build_journal(parse_settings({})), InMemoryJournal)
+    file_settings = parse_settings(
+        {"storage": {"ledger": "sqlite", "journal_path": str(tmp_path / "j.jsonl")}}
+    )
+    assert isinstance(build_journal(file_settings), FileJournal)
+    monkeypatch.delenv("BONE_REAPER_POSTGRES_DSN", raising=False)
+    with pytest.raises(StoreError):
+        build_journal(parse_settings({"storage": {"ledger": "postgresql"}}))
+
+    class StoreJournal(InMemoryJournal):
+        def __init__(self) -> None:
+            super().__init__()
+            self.intents: list[tuple[str, D]] = []
+            self.fills: list[tuple[str, int]] = []
+
+        def record_intent(self, intent, reservation_amount, ts_utc_ms) -> None:
+            self.intents.append((intent.intent_id, reservation_amount))
+            self.append({"kind": "intent", "ts_utc_ms": ts_utc_ms, "intent": to_jsonable(intent)})
+
+        def record_fill(self, fill, entries) -> bool:
+            self.fills.append((fill.trade_id, len(entries)))
+            self.append({"kind": "fill", "ts_utc_ms": fill.ts_utc_ms, "fill": to_jsonable(fill)})
+            return True
+
+    store = StoreJournal()
+    oms, _, _ = make_oms(journal=store)
+    intent = make_intent(SPEC)
+    oms.submit(intent)
+    oms.on_fill(fill_for(intent, "4"))
+    assert store.intents == [("i1", D(4))]
+    assert store.fills == [("t1", 4)]
+    rebuilt, _, account = make_oms(journal=store)
+    rebuilt.restore()
+    assert rebuilt.orders["i1"].matched_gross == D(4)
+    assert account.shares_net(intent.asset_id) == D(4)
