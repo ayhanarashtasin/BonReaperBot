@@ -52,6 +52,7 @@ DECISION_OFFSETS_S = (60, 120, 180, 240)
 SOURCE_PROXY = "binance_spot_1m_proxy_with_official_labels"
 MIN_MARKETS_FOR_ECONOMIC_DECISION = 30
 MIN_TEST_MARKETS_FOR_MODEL = 100
+MIN_MODEL_USAGE = 0.5
 
 
 @dataclass(frozen=True, slots=True)
@@ -346,7 +347,12 @@ def reference_probability(
     *,
     delay_ms: int = 0,
 ) -> Callable[[], float | None]:
-    """A live P(Up) from the Chainlink TWAP in the simulator. ``None`` means use the midpoint."""
+    """A live P(Up) from the Chainlink TWAP in the simulator. ``None`` means use the midpoint.
+
+    Freshness and availability use receive time, which is on the same clock as ``now``. Source
+    timestamps are venue time, so comparing them with ``now`` would count local clock error and
+    feed lag as staleness and silently disable the model.
+    """
 
     def probability() -> float | None:
         now = core.scheduler.now - delay_ms
@@ -356,20 +362,17 @@ def reference_probability(
         strike = core.reference.observed_strike(spec.start_utc_ms)
         if strike is None:
             return None
-        history = [
-            PricePoint(ts, float(value))
-            for ts, value, _received in core.reference.history
-            if now - 900_000 <= ts <= now
-        ]
-        if not history or now - history[-1].ts_ms > core.limits.max_reference_age_ms + delay_ms:
+        known = [p for p in core.reference.history if p[2] <= now and now - 900_000 <= p[0]]
+        if not known or now - known[-1][2] > core.limits.max_reference_age_ms:
             return None
+        decision = min(max(now, known[-1][0]), spec.end_utc_ms - 1)
         row = build_features(
             market_slug=spec.slug,
             market_end_ms=spec.end_utc_ms,
             window_seconds=spec.duration_minutes * 60,
-            decision_ms=min(now, spec.end_utc_ms - 1),
+            decision_ms=decision,
             strike=float(strike),
-            history=history,
+            history=[PricePoint(ts, float(value)) for ts, value, _ in known if ts <= decision],
             label_up=None,
             source="chainlink_twap",
         )
@@ -414,32 +417,55 @@ def _audit_row(variant: str, scenario: str, metrics: dict[str, Any]) -> dict[str
     }
 
 
+def model_usage(row: dict[str, Any]) -> float:
+    """Share of quote decisions that actually used the model rather than the fallback."""
+    sources = row.get("fair_value_sources") or {}
+    total = sum(sources.values())
+    return sources.get("model", 0) / total if total else 0.0
+
+
 def audit_decision(rows: Iterable[dict[str, Any]], resolved_markets: int) -> dict[str, object]:
-    """GO only if a model beats the midpoint baseline under every scenario, on enough markets."""
+    """CANDIDATE needs real model use, a win over the midpoint and a profit, in every scenario.
+
+    Losing less than the baseline is not a go signal, and a variant that mostly fell back to the
+    midpoint has not been tested at all.
+    """
     table = list(rows)
     baseline = {r["scenario"]: r for r in table if r["variant"] == "midpoint_baseline"}
     decisions: dict[str, object] = {}
-    any_go = False
+    any_candidate = False
+    any_evaluated = False
     for variant in sorted({r["variant"] for r in table} - {"midpoint_baseline"}):
         mine = [r for r in table if r["variant"] == variant and r["scenario"] in baseline]
-        better_everywhere = bool(mine) and all(
+        evaluated = bool(mine) and all(model_usage(r) >= MIN_MODEL_USAGE for r in mine)
+        beats = bool(mine) and all(
             Decimal(str(r["realized_pnl"])) > Decimal(str(baseline[r["scenario"]]["realized_pnl"]))
             for r in mine
         )
-        decisions[variant] = {"beats_midpoint_in_all_scenarios": better_everywhere}
-        any_go = any_go or better_everywhere
+        profitable = bool(mine) and all(Decimal(str(r["realized_pnl"])) > 0 for r in mine)
+        decisions[variant] = {
+            "model_used_in_most_decisions": evaluated,
+            "min_model_usage": f"{min((model_usage(r) for r in mine), default=0.0):.4f}",
+            "beats_midpoint_in_all_scenarios": beats,
+            "profitable_in_all_scenarios": profitable,
+        }
+        any_evaluated = any_evaluated or evaluated
+        any_candidate = any_candidate or (evaluated and beats and profitable)
     if resolved_markets < MIN_MARKETS_FOR_ECONOMIC_DECISION:
         status = "INCONCLUSIVE"
         reason = (
             f"only {resolved_markets} resolved markets; at least "
             f"{MIN_MARKETS_FOR_ECONOMIC_DECISION} are required before any economic conclusion"
         )
-    elif any_go:
+    elif not any_evaluated:
+        status = "INCONCLUSIVE"
+        reason = "no variant used the model in most decisions, so the model was not tested"
+    elif any_candidate:
         status = "CANDIDATE"
-        reason = "beat the midpoint in simulation; still needs fresh held-out data and review"
+        reason = "profitable and ahead of the midpoint in simulation; needs fresh held-out data"
     else:
         status = "NO-GO"
-        reason = "no model variant beat the midpoint baseline in every scenario"
+        reason = "no evaluated variant was both profitable and ahead of the midpoint everywhere"
     return {
         "status": status,
         "reason": reason,

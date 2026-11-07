@@ -442,3 +442,96 @@ class TestStorageFaults:
         journal.append = broken
         advance(core, factory, 1500)
         assert core.kill.has(KillReason.STORAGE_FAILURE)
+
+
+class TestMatchingEngineRestart:
+    """docs.polymarket.com/trading/matching-engine: new work is rejected during a restart, then
+    two minutes of post-only follow while cancels stay available."""
+
+    def test_rejections_during_restart_are_definite_and_release_funds(self):
+        restarting = SubmitResult(SubmitStatus.REJECTED, reason="restarting")
+
+        def engine_down(core):
+            core.port.submit = lambda intent: restarting
+            core.port.submit_batch = lambda intents: [restarting for _ in intents]
+
+        core, factory = healthy_core(fault=engine_down)
+        advance(core, factory, 1500)
+        states = {o.state for o in core.oms.orders.values()}
+        assert states == {OrderState.REJECTED}, "a definite rejection is not an unknown order"
+        assert core.account.cash_reserved == 0
+        assert not core.oms.risk_frozen
+
+    def test_quoting_resumes_after_restart_with_no_blind_resend(self):
+        restarting = SubmitResult(SubmitStatus.REJECTED, reason="restarting")
+        calls = []
+
+        def engine_down(core):
+            core.real_submit_batch = core.port.submit_batch
+            core.port.submit_batch = lambda intents: (
+                calls.extend(intents) or [restarting for _ in intents]
+            )
+
+        core, factory = healthy_core(fault=engine_down)
+        advance(core, factory, 600)
+        rejected = len(core.oms.orders)
+        assert rejected and len({i.intent_id for i in calls}) == len(calls), "ids are never reused"
+        core.port.submit_batch = core.real_submit_batch
+        advance(core, factory, 1000)
+        assert any(o.state is OrderState.OPEN for o in core.oms.orders.values())
+
+    def test_post_only_window_keeps_quotes_and_rejects_takers_safely(self):
+        """The maker path is unaffected; a taker hedge rejected in the window leaves no state."""
+        core, _ = healthy_core(paper_settings(passive_quotes=False))
+
+        def post_only_window(intent):
+            if not intent.post_only:
+                return SubmitResult(SubmitStatus.REJECTED, reason="restarting_post_only")
+            return SubmitResult(SubmitStatus.ACCEPTED, "ex-1")
+
+        core.port.submit = post_only_window
+        taker = QuoteIntent(
+            intent_id="taker",
+            market_id=SPEC.market_id,
+            asset_id=SPEC.yes_asset_id,
+            outcome=Outcome.YES,
+            side=Side.BUY,
+            price=D("0.52"),
+            size=D(5),
+            post_only=False,
+            order_type=OrderType.FOK,
+            expiry_cutoff_ms=SPEC.end_utc_ms,
+            strategy_id="t",
+            purpose=IntentPurpose.PROFITABLE_HEDGE,
+        )
+        assert core.oms.submit(taker).state is OrderState.REJECTED
+        assert core.account.cash_reserved == 0
+        maker = QuoteIntent(
+            intent_id="maker",
+            market_id=SPEC.market_id,
+            asset_id=SPEC.yes_asset_id,
+            outcome=Outcome.YES,
+            side=Side.BUY,
+            price=D("0.40"),
+            size=D(5),
+            post_only=True,
+            order_type=OrderType.GTC,
+            expiry_cutoff_ms=SPEC.end_utc_ms,
+            strategy_id="t",
+        )
+        assert core.oms.submit(maker).state is OrderState.OPEN
+
+    def test_orders_lost_in_a_restart_are_found_by_reconciliation(self):
+        """If the engine comes back without our resting orders, venue truth wins, with evidence."""
+        core, factory = healthy_core()
+        advance(core, factory, 600)
+        open_orders = [o for o in core.oms.orders.values() if o.state is OrderState.OPEN]
+        assert open_orders
+        core.exchange.resting.clear()
+        core.scheduler.run_until(core.scheduler.now + 6000, core._set_time)
+        core._reconcile("after-engine-restart")
+        report = core.reconciliations[-1]
+        assert report.clean and report.orders_updated
+        for order in open_orders:
+            assert core.oms.orders[order.intent.intent_id].state is OrderState.CANCELED
+        assert core.account.cash_reserved == 0

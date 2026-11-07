@@ -160,12 +160,26 @@ class TestForecastResearch:
 
 
 class TestAuditDecision:
-    def _rows(self, midpoint, model):
+    USED = {"model": 90, "book_midpoint": 10}  # noqa: RUF012
+    UNUSED = {"model": 1, "book_midpoint": 99}  # noqa: RUF012
+
+    def _rows(self, midpoint, model, sources=None):
+        sources = self.USED if sources is None else sources
         return [
             {"variant": "midpoint_baseline", "scenario": "pessimistic", "realized_pnl": midpoint},
             {"variant": "midpoint_baseline", "scenario": "central", "realized_pnl": midpoint},
-            {"variant": "m", "scenario": "pessimistic", "realized_pnl": model},
-            {"variant": "m", "scenario": "central", "realized_pnl": model},
+            {
+                "variant": "m",
+                "scenario": "pessimistic",
+                "realized_pnl": model,
+                "fair_value_sources": sources,
+            },
+            {
+                "variant": "m",
+                "scenario": "central",
+                "realized_pnl": model,
+                "fair_value_sources": sources,
+            },
         ]
 
     def test_thin_data_is_inconclusive_even_if_model_looks_great(self):
@@ -177,10 +191,25 @@ class TestAuditDecision:
         decision = audit_decision(self._rows("1", "0"), MIN_MARKETS_FOR_ECONOMIC_DECISION)
         assert decision["status"] == "NO-GO"
 
-    def test_better_model_is_only_a_candidate_and_stays_disabled(self):
+    def test_profitable_better_model_is_only_a_candidate_and_stays_disabled(self):
         decision = audit_decision(self._rows("0", "1"), MIN_MARKETS_FOR_ECONOMIC_DECISION)
         assert decision["status"] == "CANDIDATE"
         assert decision["model_enabled_by_default"] is False
+
+    def test_losing_less_than_the_baseline_is_not_a_candidate(self):
+        """Regression: a smaller loss must never read as a go signal."""
+        decision = audit_decision(self._rows("-100", "-5"), MIN_MARKETS_FOR_ECONOMIC_DECISION)
+        assert decision["status"] == "NO-GO"
+        assert decision["variants"]["m"]["beats_midpoint_in_all_scenarios"] is True
+        assert decision["variants"]["m"]["profitable_in_all_scenarios"] is False
+
+    def test_a_model_that_barely_ran_was_not_tested(self):
+        """Regression: a variant used the model in 0.7% of decisions and still got a verdict."""
+        decision = audit_decision(
+            self._rows("0", "100", self.UNUSED), MIN_MARKETS_FOR_ECONOMIC_DECISION
+        )
+        assert decision["status"] == "INCONCLUSIVE"
+        assert decision["variants"]["m"]["model_used_in_most_decisions"] is False
 
     def test_must_win_in_every_scenario(self):
         rows = self._rows("0", "1")
@@ -270,3 +299,45 @@ class TestModelIntegration:
         assert all(r["ledger_errors"] == 0 for r in report["rows"])
         assert (tmp_path / "model_audit_manifest.json").exists()
         assert D(report["rows"][0]["realized_pnl"]) is not None
+
+
+class TestReferenceFreshness:
+    def _core_with_twap(self, lag_ms):
+        """TWAP whose venue timestamp lags receipt, as measured on the real feed."""
+        spec = make_spec(0)
+        core = SimCore(parse_settings({"mode": "paper"}), seed=1)
+        core.specs[spec.market_id] = spec
+        start = spec.start_utc_ms
+        for i in range(-40, 30):
+            received = start + i * 1000
+            core.reference.on_payload(
+                {
+                    "event_type": "twap_update",
+                    "timestamp": received - lag_ms,
+                    "value": str(75000 + i),
+                },
+                received,
+            )
+        core.scheduler.now = start + 29_000
+        return core
+
+    def test_feed_lag_does_not_read_as_staleness(self):
+        """Regression: comparing venue time with local time silently disabled the model."""
+        core = self._core_with_twap(lag_ms=3000)
+        assert reference_probability(core, baseline_probability)() is not None
+
+    def test_truly_stale_reference_falls_back(self):
+        core = self._core_with_twap(lag_ms=0)
+        core.scheduler.now += 10_000
+        assert reference_probability(core, baseline_probability)() is None
+
+    def test_delay_cannot_see_data_received_later(self):
+        core = self._core_with_twap(lag_ms=0)
+        seen = []
+
+        def spy(row):
+            seen.append(row.as_of_ms)
+            return 0.5
+
+        reference_probability(core, spy, delay_ms=5000)()
+        assert seen and seen[0] <= core.scheduler.now - 5000
