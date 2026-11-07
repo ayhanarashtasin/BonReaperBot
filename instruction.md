@@ -292,8 +292,8 @@ Check after two minutes:
 ```bash
 systemctl status --no-pager bonereaper-paper bonereaper-dashboard
 systemctl list-timers --no-pager bonereaper-paper-restart.timer
-journalctl -u bonereaper-paper -n 30 --no-pager
-ls -1 /home/bonereaper/BonReaperBot/reports | grep paper-
+sudo journalctl -u bonereaper-paper -n 30 --no-pager
+sudo ls -1 /home/bonereaper/BonReaperBot/reports | grep paper-
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/api/state
 ```
 
@@ -314,7 +314,7 @@ use `-L 8766:127.0.0.1:8765` and open port 8766 instead.
 
 ## Step 10. Read the logs
 
-`journalctl -u bonereaper-paper -f` shows JSON log lines. These are normal:
+`sudo journalctl -u bonereaper-paper -f` shows JSON log lines. These are normal:
 
 | Message | Meaning |
 |---|---|
@@ -338,16 +338,16 @@ fit and tell the operator:
 
 ```bash
 df -h /
-du -sh /home/bonereaper/BonReaperBot/reports/paper-* 2>/dev/null | tail -5
+sudo -u bonereaper -H bash -c 'du -sh ~/BonReaperBot/reports/paper-* 2>/dev/null | tail -5'
 ```
 
 Warn the operator if fewer than 14 days of space remain. To free space, list old sessions first and delete them only
 after the operator approves:
 
 ```bash
-find /home/bonereaper/BonReaperBot/reports -maxdepth 1 -type d -name 'paper-*' -mtime +14 -print
+sudo -u bonereaper -H find /home/bonereaper/BonReaperBot/reports -maxdepth 1 -type d -name 'paper-*' -mtime +14 -print
 # Only after approval:
-find /home/bonereaper/BonReaperBot/reports -maxdepth 1 -type d -name 'paper-*' -mtime +14 -exec rm -rf {} +
+sudo -u bonereaper -H find /home/bonereaper/BonReaperBot/reports -maxdepth 1 -type d -name 'paper-*' -mtime +14 -exec rm -rf {} +
 ```
 
 ## Step 12. Update to a new version
