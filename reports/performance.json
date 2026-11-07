@@ -1,0 +1,17 @@
+{
+ "cpu_count": 12,
+ "ram_gb": 15.7,
+ "events": 300000,
+ "load_seconds": 2.36,
+ "replay_seconds": 13.19,
+ "events_per_second": 22741,
+ "peak_rss_gb": 0.71,
+ "decision_ticks": 1916,
+ "decision_ms": {
+  "p50": 0.322,
+  "p95": 1.159,
+  "p99": 2.649
+ },
+ "metrics_checksum": "2083b046ba92cafaadf1f918cdbf178c788e4b2fd07c32528dc954d19c942045",
+ "not_measured": "Real submit, ACK and cancel latency: no order is ever sent."
+}

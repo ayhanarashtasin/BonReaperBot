@@ -10,7 +10,11 @@ one-sided fills.
 
 ## Current status
 
-See [reports/readiness_memo.md](reports/readiness_memo.md) for the evidence and verdict, and
+**Readiness verdict: FAIL. The platform works; the strategies tested do not make money in simulation.** On 34
+recorded markets, pair arbitrage found no executable edge and passive quoting lost in every scenario. The market's own
+price also forecast better than our models. It is a small sample, and all of it is simulated.
+
+See [reports/readiness_memo.md](reports/readiness_memo.md) for the evidence and
 [reports/progress.md](reports/progress.md) for task-by-task results.
 
 ## Quick start

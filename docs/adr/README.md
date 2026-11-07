@@ -105,3 +105,18 @@ deduplicated by transaction, size and price so a venue change to report both sid
 **Decision.** The Postgres store is verified against a real embedded PostgreSQL 16 (`pgserver`, dev
 only), including a real second process competing for the writer lock. The ledger default for research
 remains in-memory; ADR-05's rule that real trading uses Postgres stands.
+
+## ADR-0013: Research runs without the daily stop
+
+**Finding.** The $10 daily stop latched after 7 to 8 traded markets, leaving most of the sample unevaluated.
+
+**Decision.** `compare` reports the capped strategies as configured, and adds clearly named `*_no_loss_stop` variants
+that lift only that stop. Order and exposure limits stay. These variants exist only in research code, and no config
+file can produce them.
+
+## ADR-0014: What a candidate model must show
+
+**Finding.** The first audit returned `CANDIDATE` for a model used in 0.7% of decisions, and that also lost money.
+
+**Decision.** A variant counts only if it used the model in at least half of its decisions, beat the midpoint in every
+scenario, and made a profit in every scenario. Even then the model stays disabled until an operator enables it.

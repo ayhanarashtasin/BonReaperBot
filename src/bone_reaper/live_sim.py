@@ -23,6 +23,7 @@ from .settings import Settings
 from .types import EventEnvelope, Mode
 
 PUMP_INTERVAL_S = 0.2
+SHUTDOWN_SETTLE_MS = 2000
 
 
 def attach_core(recorder: Recorder, core: SimCore) -> Callable[[EventEnvelope], None]:
@@ -41,6 +42,19 @@ async def _pump(core: SimCore, recorder: Recorder) -> None:
         core.run_until(recorder.clock.utc_ms())
         # Decisions run on quiet feeds too, or a silent stream would never trip the kill switch.
         core._decide(core.scheduler.now)
+
+
+def shutdown_orders(core: SimCore, now_utc_ms: int) -> None:
+    """Stop new risk and try to cancel. Whatever remains is reported, not hidden.
+
+    An order still in flight cannot be cancelled until its ACK arrives, so this makes a second
+    pass after in-flight messages have landed.
+    """
+    for offset in (0, SHUTDOWN_SETTLE_MS):
+        core.run_until(now_utc_ms + offset)
+        for market_id in list(core.specs):
+            core.orchestrator.cancel_all(market_id, "shutdown")
+    core.run_until(now_utc_ms + 2 * SHUTDOWN_SETTLE_MS)
 
 
 async def run_live_sim(
@@ -67,10 +81,7 @@ async def run_live_sim(
         with contextlib.suppress(asyncio.CancelledError):
             await pump
         await transport.close()
-    # Shutdown: stop new risk, try to cancel, then report what remains instead of hiding it.
-    for market_id in list(core.specs):
-        core.orchestrator.cancel_all(market_id, "shutdown")
-    core.run_until(recorder.clock.utc_ms() + 2000)
+    shutdown_orders(core, recorder.clock.utc_ms())
     metrics = compute_metrics(core)
     unresolved_orders = [o.intent.intent_id for o in core.oms.open_orders]
     metrics["shutdown"] = {

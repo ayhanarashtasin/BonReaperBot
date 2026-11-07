@@ -1,0 +1,1271 @@
+{
+ "checksum": "c3db45c0c478eef1248dae2f1811c78b22446340e3e203dbd26313f46d22a9d8",
+ "data": {
+  "book_invalidations": {},
+  "book_validity_at_end": {
+   "ready": 74
+  },
+  "gaps": 4,
+  "market_gaps": 0
+ },
+ "disclaimer": "SIMULATED. Not real earnings. Fills depend on stated queue and latency assumptions that have not been validated against real fills.",
+ "equity": {
+  "ending_cash_available": "85.57083920",
+  "ending_cash_redeemable": "0.000000",
+  "ending_cash_reserved": "0.00000000",
+  "max_drawdown": "17.270510800",
+  "samples": 2077,
+  "starting": "100"
+ },
+ "events_processed": 5623846,
+ "exposure": {
+  "fraction_traded_markets_unpaired_at_close": "0.75",
+  "markets_with_unpaired_at_close": 6,
+  "time_sampled_ms": 10385000,
+  "time_with_unpaired_inventory_ms": 1805000
+ },
+ "fair_value_sources": {
+  "book_midpoint": 5838
+ },
+ "fills": {
+  "by_purpose": {
+   "passive_quote": 104
+  },
+  "count": 104,
+  "gross_shares": "818.981756",
+  "hedge_cost": "0",
+  "hedge_loss_budget_used": "0",
+  "maker": 104,
+  "notional": "417.93916080",
+  "taker": 0
+ },
+ "latency_ms": {
+  "ack": {
+   "count": 1064,
+   "p50": 123,
+   "p95": 148,
+   "p99": 150
+  },
+  "cancel": {
+   "count": 451,
+   "p50": 175,
+   "p95": 198,
+   "p99": 200
+  },
+  "submit": {
+   "count": 509,
+   "p50": 174,
+   "p95": 198,
+   "p99": 200
+  }
+ },
+ "ledger": {
+  "conservation_errors": [],
+  "entries": 2346
+ },
+ "markets_total": 37,
+ "markets_traded": 8,
+ "markets_unresolved": [],
+ "markout_avg_per_share": {
+  "1s": "-0.030",
+  "30s": "-0.006010101010101010101010101010",
+  "5s": "-0.04326923076923076923076923077"
+ },
+ "markout_samples": {
+  "1s": 104,
+  "30s": 99,
+  "5s": 104
+ },
+ "orders": {
+  "anomalies": [],
+  "by_purpose": {
+   "passive_quote": 509,
+   "profitable_hedge": 1218
+  },
+  "by_state": {
+   "CANCELED": 425,
+   "FILLED": 82,
+   "REJECTED": 2,
+   "RISK_REJECTED": 1218
+  },
+  "exchange": {
+   "arrivals": 509,
+   "cancels_too_late": 26,
+   "fok_kills": 0,
+   "post_only_rejects": 2,
+   "trade_duplicates": 0,
+   "trade_events": 73972
+  },
+  "orphan_fills": 0,
+  "risk_rejected": 1218,
+  "risk_rejection_reasons": {
+   "daily_loss_limit": 882,
+   "insufficient_available_cash": 560,
+   "kill:loss_cap": 882,
+   "kill:near_expiry": 68,
+   "quote_cutoff": 68,
+   "total_gross_limit": 20
+  },
+  "unknown_remaining": 0
+ },
+ "per_market": [
+  {
+   "cost": "2.70",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6730867",
+   "no_gross": "10",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "-2.70",
+   "settled": true,
+   "slug": "btc-updown-5m-1793992800",
+   "unpaired_no_at_close": "10",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "92.69660000",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6730888",
+   "no_gross": "86.57",
+   "paired_at_close": "86.57",
+   "payout": "86.57",
+   "realized_pnl": "-6.12660000",
+   "settled": true,
+   "slug": "btc-updown-5m-1793993100",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "3.430000",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "90.000000"
+  },
+  {
+   "cost": "57.70000000",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6731179",
+   "no_gross": "60.00",
+   "paired_at_close": "60.000000",
+   "payout": "60.000000",
+   "realized_pnl": "2.30000000",
+   "settled": true,
+   "slug": "btc-updown-5m-1793993400",
+   "unpaired_no_at_close": "0.000000",
+   "unpaired_yes_at_close": "0.000000",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "60.000000"
+  },
+  {
+   "cost": "93.47290000",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6731220",
+   "no_gross": "90.000",
+   "paired_at_close": "90.000",
+   "payout": "91.370000",
+   "realized_pnl": "-2.10290000",
+   "settled": true,
+   "slug": "btc-updown-5m-1793993700",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "1.370000",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "91.370000"
+  },
+  {
+   "cost": "9.00000000",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6731248",
+   "no_gross": "10",
+   "paired_at_close": "10.000000",
+   "payout": "10.000000",
+   "realized_pnl": "1.00000000",
+   "settled": true,
+   "slug": "btc-updown-5m-1793994000",
+   "unpaired_no_at_close": "0.000000",
+   "unpaired_yes_at_close": "0.000000",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "10.000000"
+  },
+  {
+   "cost": "72.00746080",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6731294",
+   "no_gross": "70.00",
+   "paired_at_close": "65.471756",
+   "payout": "70.00",
+   "realized_pnl": "-2.00746080",
+   "settled": true,
+   "slug": "btc-updown-5m-1793994300",
+   "unpaired_no_at_close": "4.528244",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "65.471756"
+  },
+  {
+   "cost": "87.80000000",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6731762",
+   "no_gross": "80",
+   "paired_at_close": "80",
+   "payout": "80",
+   "realized_pnl": "-7.80000000",
+   "settled": true,
+   "slug": "btc-updown-5m-1793994600",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "10.000000",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "90.000000"
+  },
+  {
+   "cost": "2.56220000",
+   "fees_usd_equivalent": "0.00",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732053",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "5.570000",
+   "realized_pnl": "3.00780000",
+   "settled": true,
+   "slug": "btc-updown-5m-1793994900",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "5.570000",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "5.570000"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732185",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793995200",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732236",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793995500",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732255",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793995800",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732267",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793996100",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732289",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793996400",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732749",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793996700",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732889",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793997000",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732948",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793997300",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6732967",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793997600",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733008",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793997900",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733318",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793998200",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733589",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793998500",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733649",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793998800",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733715",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793999100",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733755",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793999400",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733769",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1793999700",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733811",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794000000",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733893",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794000300",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6733949",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794000600",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734153",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794000900",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734169",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794001200",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734289",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794001500",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734636",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794001800",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734822",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794002100",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734848",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794002400",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "YES",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": null,
+   "market_id": "6734960",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": "0",
+   "settled": true,
+   "slug": "btc-updown-5m-1794002700",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": "NO",
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": "0",
+   "market_id": "6734978",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": null,
+   "settled": false,
+   "slug": "btc-updown-5m-1794003000",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": null,
+   "winning": null,
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": "0",
+   "market_id": "6734981",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": null,
+   "settled": false,
+   "slug": "btc-updown-5m-1794003300",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": "0.000",
+   "winning": null,
+   "yes_gross": "0"
+  },
+  {
+   "cost": "0",
+   "fees_usd_equivalent": "0",
+   "locked_pair_pnl_unsettled": "0",
+   "market_id": "6735008",
+   "no_gross": "0",
+   "paired_at_close": "0",
+   "payout": "0",
+   "realized_pnl": null,
+   "settled": false,
+   "slug": "btc-updown-5m-1794003600",
+   "unpaired_no_at_close": "0",
+   "unpaired_yes_at_close": "0",
+   "unrealized_mtm": "0.000",
+   "winning": null,
+   "yes_gross": "0"
+  }
+ ],
+ "per_traded_market": {
+  "best": "3.00780000",
+  "count": 8,
+  "losers": 5,
+  "mean": "-1.80364510",
+  "mean_95ci_high": "0.914404233352145026882776208",
+  "mean_95ci_low": "-4.521694433352145026882776208",
+  "stderr": "1.359024666676072513441388104",
+  "winners": 3,
+  "worst": "-7.80000000"
+ },
+ "pnl": {
+  "fees_usd_equivalent": "0.00",
+  "per_traded_market_avg": "-1.80364510",
+  "realized_settled": "-14.42916080",
+  "rebates_counted": "0 (never pre-counted)",
+  "unrealized_mtm_unresolved": "0.000",
+  "unresolved_cost_at_risk": "0"
+ },
+ "reconciliation": {
+  "clean": 37,
+  "max_abs_cash_diff": "0.00",
+  "position_diff_runs": 0,
+  "runs": 37
+ },
+ "safety": {
+  "alerts": [
+   {
+    "expected_pair_pnl": "0",
+    "key": "6730867",
+    "kind": "unhedged_inventory",
+    "quantity": "10",
+    "reason": "insufficient_counterpart_liquidity",
+    "ts_utc_ms": 1793993054237
+   },
+   {
+    "expected_pair_pnl": "-0.2856",
+    "key": "6731179",
+    "kind": "unhedged_inventory",
+    "quantity": "10",
+    "reason": "hedge_unprofitable_and_not_authorized",
+    "ts_utc_ms": 1793993443111
+   },
+   {
+    "key": "6731179",
+    "kind": "hedge_rejected_by_risk",
+    "ts_utc_ms": 1793993446193
+   },
+   {
+    "key": "6731220",
+    "kind": "hedge_rejected_by_risk",
+    "ts_utc_ms": 1793993812108
+   },
+   {
+    "expected_pair_pnl": "-0.049240677966101694915254238",
+    "key": "6731220",
+    "kind": "unhedged_inventory",
+    "quantity": "5.400000",
+    "reason": "hedge_unprofitable_and_not_authorized",
+    "ts_utc_ms": 1793993813522
+   },
+   {
+    "expected_pair_pnl": "0",
+    "key": "6731294",
+    "kind": "unhedged_inventory",
+    "quantity": "5.471756",
+    "reason": "insufficient_counterpart_liquidity",
+    "ts_utc_ms": 1793994554248
+   },
+   {
+    "expected_pair_pnl": "-1.70740000",
+    "key": "6731762",
+    "kind": "unhedged_inventory",
+    "quantity": "5.000000",
+    "reason": "hedge_unprofitable_and_not_authorized",
+    "ts_utc_ms": 1793994826788
+   },
+   {
+    "expected_pair_pnl": "-0.19760000",
+    "key": "6732053",
+    "kind": "unhedged_inventory",
+    "quantity": "5.570000",
+    "reason": "hedge_unprofitable_and_not_authorized",
+    "ts_utc_ms": 1793994927987
+   },
+   {
+    "key": "6732053",
+    "kind": "hedge_rejected_by_risk",
+    "ts_utc_ms": 1793994938507
+   }
+  ],
+  "kill_active_at_end": [
+   "loss_cap"
+  ],
+  "kill_events": [
+   [
+    1793993080090,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793993100115,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793993380168,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793993400017,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793993680139,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793993700115,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793993980026,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793994000107,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793994280251,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793994300115,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793994580088,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793994600263,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793994880209,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793994900201,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793994960000,
+    "engage",
+    "loss_cap"
+   ],
+   [
+    1793995180139,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793995200230,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793995480139,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793995500169,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793995780191,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793995800017,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793996080002,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793996100148,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793996380024,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793996400079,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793996440115,
+    "engage",
+    "stale_feed"
+   ],
+   [
+    1793996467274,
+    "clear",
+    "stale_feed"
+   ],
+   [
+    1793996680115,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793996700264,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793996980118,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793997000177,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793997280161,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793997300044,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793997580052,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793997600093,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793997880007,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793997900232,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793998180115,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793998200127,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793998480186,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793998500144,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793998780232,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793998800115,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793999080175,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793999100144,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793999380210,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793999400115,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793999680190,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1793999700196,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1793999980042,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794000000194,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794000280241,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794000300078,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794000580176,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794000600228,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794000880115,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794000900200,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794001180023,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794001200061,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794001295615,
+    "engage",
+    "stale_feed"
+   ],
+   [
+    1794001304277,
+    "clear",
+    "stale_feed"
+   ],
+   [
+    1794001480095,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794001500018,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794001780126,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794001800148,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794002080184,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794002100183,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794002380010,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794002400027,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794002680115,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794002700114,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794002980143,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794003000145,
+    "clear",
+    "near_expiry"
+   ],
+   [
+    1794003280047,
+    "engage",
+    "near_expiry"
+   ],
+   [
+    1794003300229,
+    "clear",
+    "near_expiry"
+   ]
+  ],
+  "port_is_real": false,
+  "visibility_violations": 0
+ },
+ "scan": {
+  "best_edge_after_reserve": "-0.020750",
+  "best_gross_edge": "-0.005",
+  "by_q_net": {
+   "10": {
+    "evaluated": 9867,
+    "fully_fillable": 7919
+   },
+   "100": {
+    "evaluated": 9867,
+    "fully_fillable": 7911
+   },
+   "25": {
+    "evaluated": 9867,
+    "fully_fillable": 7916
+   },
+   "5": {
+    "evaluated": 9867,
+    "fully_fillable": 7919
+   },
+   "50": {
+    "evaluated": 9867,
+    "fully_fillable": 7913
+   }
+  },
+  "evaluations": 49335,
+  "opportunities": 0,
+  "opportunity_duration_ms_max": null,
+  "opportunity_duration_ms_median": null,
+  "passed_candidates": 0,
+  "positive_after_fees": 0,
+  "positive_after_fees_and_reserve": 0,
+  "positive_gross_edge": 0,
+  "reject_reason_counts": {
+   "book_no_updates": 10,
+   "book_stale": 1150,
+   "book_uninitialized": 10,
+   "edge_below_threshold": 39578,
+   "insufficient_liquidity": 9762,
+   "negative_net_edge": 39578,
+   "roi_below_threshold": 39578,
+   "too_close_to_expiry": 3300
+  }
+ },
+ "scenario": {
+  "fee_multiplier": "1",
+  "hedge_floor_seconds": "45",
+  "latency_factor": "1",
+  "name": "pessimistic",
+  "queue_model": "pessimistic",
+  "rebates": "excluded (zero); variable and paid later, never pre-counted"
+ },
+ "seed": 7,
+ "simulated": true,
+ "strategy_id": "baseline"
+}

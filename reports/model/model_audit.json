@@ -1,0 +1,161 @@
+{
+ "decision": {
+  "model_enabled_by_default": false,
+  "note": "The probability model stays disabled unless an operator explicitly enables it.",
+  "reason": "no evaluated variant was both profitable and ahead of the midpoint everywhere",
+  "status": "NO-GO",
+  "variants": {
+   "logistic_model": {
+    "beats_midpoint_in_all_scenarios": true,
+    "min_model_usage": "0.9313",
+    "model_used_in_most_decisions": true,
+    "profitable_in_all_scenarios": false
+   },
+   "random_walk_model": {
+    "beats_midpoint_in_all_scenarios": true,
+    "min_model_usage": "0.8783",
+    "model_used_in_most_decisions": true,
+    "profitable_in_all_scenarios": false
+   }
+  }
+ },
+ "disclaimer": "SIMULATED, unverified queue assumptions. Not real earnings.",
+ "model_hash": "e6b864fbb5172f384d59eb74a6d6df315284deab536a29a5715e90cb52607c2b",
+ "rows": [
+  {
+   "checksum": "986d60cbdf18ace1438762252198e6c787ce2ed3cdfdb5034ecc7f32e627da03",
+   "fair_value_sources": {
+    "book_midpoint": 30727
+   },
+   "fills": 506,
+   "ledger_errors": 0,
+   "markets_traded": 36,
+   "markout_5s": "-0.03406126482213438735177865613",
+   "max_drawdown": "109.561249560",
+   "realized_pnl": "-108.76124956",
+   "scenario": "pessimistic",
+   "unpaired_close_fraction": "0.8055555555555555555555555556",
+   "unresolved_cost": "35.90000000",
+   "variant": "midpoint_baseline"
+  },
+  {
+   "checksum": "2969e54fe3548828f6005bafbbcf137535dc20beac1d99dc8b47478ce27365f9",
+   "fair_value_sources": {
+    "book_midpoint": 4015,
+    "model": 28985
+   },
+   "fills": 268,
+   "ledger_errors": 0,
+   "markets_traded": 35,
+   "markout_5s": "-0.01811567164179104477611940299",
+   "max_drawdown": "18.642446000",
+   "realized_pnl": "-3.34004888",
+   "scenario": "pessimistic",
+   "unpaired_close_fraction": "0.9142857142857142857142857143",
+   "unresolved_cost": "26.9552",
+   "variant": "random_walk_model"
+  },
+  {
+   "checksum": "10174db2e44c3a4e6181e14aecdd1e597ec7fd0b19aaa6691504d887f4859252",
+   "fair_value_sources": {
+    "book_midpoint": 2451,
+    "model": 33240
+   },
+   "fills": 276,
+   "ledger_errors": 0,
+   "markets_traded": 35,
+   "markout_5s": "-0.01931159420289855072463768116",
+   "max_drawdown": "22.850397800",
+   "realized_pnl": "-20.73827088",
+   "scenario": "pessimistic",
+   "unpaired_close_fraction": "0.9142857142857142857142857143",
+   "unresolved_cost": "20.30",
+   "variant": "logistic_model"
+  },
+  {
+   "checksum": "946ab2a201d2b214e43d56147dab106a04e95da45a776f2b4bcb098b7dc2bd3a",
+   "fair_value_sources": {
+    "book_midpoint": 2485,
+    "model": 33225
+   },
+   "fills": 329,
+   "ledger_errors": 0,
+   "markets_traded": 35,
+   "markout_5s": "-0.02059270516717325227963525836",
+   "max_drawdown": "33.499785800",
+   "realized_pnl": "-30.78765888",
+   "scenario": "pessimistic",
+   "unpaired_close_fraction": "0.8857142857142857142857142857",
+   "unresolved_cost": "19.90000000",
+   "variant": "logistic_model_delayed_twap_5s"
+  },
+  {
+   "checksum": "dd3f33fdb4d762adc202116ee0d715d4ab9254fab6e201aae598470aac612e67",
+   "fair_value_sources": {
+    "book_midpoint": 30727
+   },
+   "fills": 569,
+   "ledger_errors": 0,
+   "markets_traded": 36,
+   "markout_5s": "-0.02763250883392226148409893993",
+   "max_drawdown": "92.438560785",
+   "realized_pnl": "-91.88858516",
+   "scenario": "central",
+   "unpaired_close_fraction": "0.9166666666666666666666666667",
+   "unresolved_cost": "34.75157674",
+   "variant": "midpoint_baseline"
+  },
+  {
+   "checksum": "9ebb0e6366b83d1710324bd8c7511d4a921c940d0a4dd207ef41f9372f5e284c",
+   "fair_value_sources": {
+    "book_midpoint": 4015,
+    "model": 28985
+   },
+   "fills": 288,
+   "ledger_errors": 0,
+   "markets_traded": 35,
+   "markout_5s": "-0.01461805555555555555555555556",
+   "max_drawdown": "14.260435090",
+   "realized_pnl": "-6.09988415",
+   "scenario": "central",
+   "unpaired_close_fraction": "0.9714285714285714285714285714",
+   "unresolved_cost": "26.8552",
+   "variant": "random_walk_model"
+  },
+  {
+   "checksum": "2daa6af3d982dad1ff85bfab7a09b9ffea944b8554ab63d8fa9ba42ec948e857",
+   "fair_value_sources": {
+    "book_midpoint": 2451,
+    "model": 33240
+   },
+   "fills": 300,
+   "ledger_errors": 0,
+   "markets_traded": 35,
+   "markout_5s": "-0.01691666666666666666666666667",
+   "max_drawdown": "21.538482535",
+   "realized_pnl": "-17.52380737",
+   "scenario": "central",
+   "unpaired_close_fraction": "0.9714285714285714285714285714",
+   "unresolved_cost": "27.52939534",
+   "variant": "logistic_model"
+  },
+  {
+   "checksum": "94d960de47d3bdb484e8144a69d475a3a62edd7748da2eb891ea9e97182660de",
+   "fair_value_sources": {
+    "book_midpoint": 2485,
+    "model": 33225
+   },
+   "fills": 322,
+   "ledger_errors": 0,
+   "markets_traded": 35,
+   "markout_5s": "-0.02054347826086956521739130435",
+   "max_drawdown": "20.858347705",
+   "realized_pnl": "-15.91556212",
+   "scenario": "central",
+   "unpaired_close_fraction": "0.8571428571428571428571428571",
+   "unresolved_cost": "27.50000000",
+   "variant": "logistic_model_delayed_twap_5s"
+  }
+ ],
+ "simulated": true
+}

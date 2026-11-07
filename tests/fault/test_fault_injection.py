@@ -535,3 +535,15 @@ class TestMatchingEngineRestart:
         for order in open_orders:
             assert core.oms.orders[order.intent.intent_id].state is OrderState.CANCELED
         assert core.account.cash_reserved == 0
+
+
+def test_shutdown_cancels_an_order_that_was_still_in_flight():
+    """Regression: an order acknowledged after the cancel pass stayed open at shutdown."""
+    from bone_reaper.live_sim import shutdown_orders
+
+    core, _ = healthy_core()
+    in_flight = [o for o in core.oms.orders.values() if o.state is OrderState.SUBMITTING]
+    assert in_flight, "the setup decision just sent quotes that have not been acknowledged"
+    shutdown_orders(core, core.scheduler.now)
+    assert core.oms.open_orders == []
+    assert core.account.cash_reserved == 0

@@ -1,0 +1,146 @@
+{
+ "config_hash": "81e9be58aee7803beead745a4a07604b29efb41169544cb0fb6330610de3d51f",
+ "execution": "none: the scanner has no order route",
+ "fee_versions": [
+  "crypto_fees_v2:rate=0.07:exp=1:taker_only=True:shares_on_buy"
+ ],
+ "generated_by": "bone-reaper scan",
+ "input_manifest_sha256": "1aa0877a6a1a07ca97199a139126fa09d6aaa0bd048184d8cc28d639b03b62e6",
+ "interpretation": "candidates are indicative only; two requests are not atomic and no fill is implied",
+ "known_gaps": [
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "discovery_failed:TransportError",
+   "segment": "09fb759374b1:discovery",
+   "ts_utc_ms": 1793996455982
+  },
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "binance_error:ConnectionClosedError",
+   "segment": "09fb759374b1:binance:1",
+   "ts_utc_ms": 1793996474377
+  },
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "discovery_failed:TransportError",
+   "segment": "09fb759374b1:discovery",
+   "ts_utc_ms": 1793997227628
+  },
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "recorder_started",
+   "segment": "331e21959339:control",
+   "ts_utc_ms": 1794001301812
+  }
+ ],
+ "markets": [
+  "btc-updown-5m-1793992800",
+  "btc-updown-5m-1793993100",
+  "btc-updown-5m-1793993400",
+  "btc-updown-5m-1793993700",
+  "btc-updown-5m-1793994000",
+  "btc-updown-5m-1793994300",
+  "btc-updown-5m-1793994600",
+  "btc-updown-5m-1793994900",
+  "btc-updown-5m-1793995200",
+  "btc-updown-5m-1793995500",
+  "btc-updown-5m-1793995800",
+  "btc-updown-5m-1793996100",
+  "btc-updown-5m-1793996400",
+  "btc-updown-5m-1793996700",
+  "btc-updown-5m-1793997000",
+  "btc-updown-5m-1793997300",
+  "btc-updown-5m-1793997600",
+  "btc-updown-5m-1793997900",
+  "btc-updown-5m-1793998200",
+  "btc-updown-5m-1793998500",
+  "btc-updown-5m-1793998800",
+  "btc-updown-5m-1793999100",
+  "btc-updown-5m-1793999400",
+  "btc-updown-5m-1793999700",
+  "btc-updown-5m-1794000000",
+  "btc-updown-5m-1794000300",
+  "btc-updown-5m-1794000600",
+  "btc-updown-5m-1794000900",
+  "btc-updown-5m-1794001200",
+  "btc-updown-5m-1794001500",
+  "btc-updown-5m-1794001800",
+  "btc-updown-5m-1794002100",
+  "btc-updown-5m-1794002400",
+  "btc-updown-5m-1794002700",
+  "btc-updown-5m-1794003000",
+  "btc-updown-5m-1794003300",
+  "btc-updown-5m-1794003600"
+ ],
+ "parts": 9332,
+ "period_end_utc_ms": 1794003398942,
+ "period_start_utc_ms": 1793993014615,
+ "records_file": "scan.records.jsonl",
+ "records_sha256": "548ecfe91269bc57f199c07ae496c93293a6511731ade1aa06d943363bd4f4a3",
+ "sdk_version": "0.17.0",
+ "summary": {
+  "best_edge_after_reserve": "4.773433",
+  "best_gross_edge": "8.33349213911386374464030491",
+  "by_q_net": {
+   "10": {
+    "evaluated": 10228,
+    "fully_fillable": 7956,
+    "positive_after_fees": 2,
+    "positive_after_reserve": 2,
+    "positive_gross": 4
+   },
+   "100": {
+    "evaluated": 10228,
+    "fully_fillable": 7948,
+    "positive_after_fees": 2,
+    "positive_after_reserve": 2,
+    "positive_gross": 4
+   },
+   "25": {
+    "evaluated": 10228,
+    "fully_fillable": 7952,
+    "positive_after_fees": 2,
+    "positive_after_reserve": 2,
+    "positive_gross": 4
+   },
+   "5": {
+    "evaluated": 10228,
+    "fully_fillable": 7956,
+    "positive_after_fees": 2,
+    "positive_after_reserve": 2,
+    "positive_gross": 4
+   },
+   "50": {
+    "evaluated": 10228,
+    "fully_fillable": 7949,
+    "positive_after_fees": 2,
+    "positive_after_reserve": 2,
+    "positive_gross": 4
+   }
+  },
+  "evaluations": 51140,
+  "opportunities": 10,
+  "opportunity_duration_ms_max": 0,
+  "opportunity_duration_ms_median": 0,
+  "passed_candidates": 0,
+  "positive_after_fees": 10,
+  "positive_after_fees_and_reserve": 10,
+  "positive_gross_edge": 20,
+  "reject_reason_counts": {
+   "book_no_updates": 5,
+   "book_stale": 45,
+   "book_syncing": 10,
+   "book_uninitialized": 5,
+   "edge_below_threshold": 39755,
+   "insufficient_liquidity": 11379,
+   "market_expired": 1575,
+   "negative_net_edge": 39751,
+   "roi_below_threshold": 39751,
+   "too_close_to_expiry": 3280
+  }
+ }
+}

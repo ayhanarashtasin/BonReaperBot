@@ -1,0 +1,736 @@
+{
+ "book_invalidations": {},
+ "checksum_problems": [],
+ "clock_offset_ms_latest": 847,
+ "clock_probes": 126,
+ "events_total": 5623846,
+ "full_lifespans": 34,
+ "gaps": [
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "discovery_failed:TransportError",
+   "segment": "09fb759374b1:discovery",
+   "ts_utc_ms": 1793996455982
+  },
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "binance_error:ConnectionClosedError",
+   "segment": "09fb759374b1:binance:1",
+   "ts_utc_ms": 1793996474377
+  },
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "discovery_failed:TransportError",
+   "segment": "09fb759374b1:discovery",
+   "ts_utc_ms": 1793997227628
+  },
+  {
+   "event_type": "gap",
+   "market_id": null,
+   "reason": "recorder_started",
+   "segment": "331e21959339:control",
+   "ts_utc_ms": 1794001301812
+  }
+ ],
+ "gaps_total": 4,
+ "markets": [
+  {
+   "events": {
+    "best_bid_ask": 1024,
+    "book": 876,
+    "last_trade_price": 437,
+    "price_change": 21794
+   },
+   "final_price": "75652.94852971558",
+   "first_event_utc_ms": 1793993015943,
+   "full_lifespan_captured": false,
+   "last_event_utc_ms": 1793993115931,
+   "market_gaps": 0,
+   "market_id": "6730867",
+   "price_to_beat": "75616.51546202993",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793992800",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4012,
+    "book": 2852,
+    "last_trade_price": 1425,
+    "price_change": 168095,
+    "tick_size_change": 4
+   },
+   "final_price": "75596.7072023035",
+   "first_event_utc_ms": 1793993016273,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793993412467,
+   "market_gaps": 0,
+   "market_id": "6730888",
+   "price_to_beat": "75652.94852971558",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793993100",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3732,
+    "book": 2890,
+    "last_trade_price": 1441,
+    "price_change": 177920
+   },
+   "final_price": "75616.65992780702",
+   "first_event_utc_ms": 1793993107506,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793993716482,
+   "market_gaps": 0,
+   "market_id": "6731179",
+   "price_to_beat": "75596.7072023035",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793993400",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 7026,
+    "book": 5016,
+    "last_trade_price": 2503,
+    "price_change": 219531
+   },
+   "final_price": "75618.11018815273",
+   "first_event_utc_ms": 1793993405728,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793994016941,
+   "market_gaps": 0,
+   "market_id": "6731220",
+   "price_to_beat": "75616.65992780702",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793993700",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3138,
+    "book": 2567,
+    "last_trade_price": 1282,
+    "price_change": 125199,
+    "tick_size_change": 4
+   },
+   "final_price": "75690.6214386973",
+   "first_event_utc_ms": 1793993703723,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793994316917,
+   "market_gaps": 0,
+   "market_id": "6731248",
+   "price_to_beat": "75618.11018815273",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793994000",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4370,
+    "book": 3637,
+    "last_trade_price": 1819,
+    "price_change": 155579
+   },
+   "final_price": "75683.16014426106",
+   "first_event_utc_ms": 1793994001757,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793994616915,
+   "market_gaps": 0,
+   "market_id": "6731294",
+   "price_to_beat": "75690.6214386973",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793994300",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 5038,
+    "book": 3800,
+    "last_trade_price": 1897,
+    "price_change": 173750
+   },
+   "final_price": "75659.795747558",
+   "first_event_utc_ms": 1793994309891,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793994913186,
+   "market_gaps": 0,
+   "market_id": "6731762",
+   "price_to_beat": "75683.16014426106",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793994600",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3010,
+    "book": 2398,
+    "last_trade_price": 1199,
+    "price_change": 124636
+   },
+   "final_price": "75762.46946901303",
+   "first_event_utc_ms": 1793994607531,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793995213194,
+   "market_gaps": 0,
+   "market_id": "6732053",
+   "price_to_beat": "75659.795747558",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793994900",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3892,
+    "book": 3208,
+    "last_trade_price": 1603,
+    "price_change": 139027
+   },
+   "final_price": "75833.00553789869",
+   "first_event_utc_ms": 1793994905252,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793995520920,
+   "market_gaps": 0,
+   "market_id": "6732185",
+   "price_to_beat": "75762.46946901303",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793995200",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4404,
+    "book": 3516,
+    "last_trade_price": 1756,
+    "price_change": 155790,
+    "tick_size_change": 4
+   },
+   "final_price": "75868.54782664127",
+   "first_event_utc_ms": 1793995203032,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793995817941,
+   "market_gaps": 0,
+   "market_id": "6732236",
+   "price_to_beat": "75833.00553789869",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793995500",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3194,
+    "book": 2452,
+    "last_trade_price": 1226,
+    "price_change": 127911,
+    "tick_size_change": 4
+   },
+   "final_price": "75756.63866780735",
+   "first_event_utc_ms": 1793995501569,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793996116545,
+   "market_gaps": 0,
+   "market_id": "6732255",
+   "price_to_beat": "75868.54782664127",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793995800",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3512,
+    "book": 2758,
+    "last_trade_price": 1379,
+    "price_change": 162496,
+    "tick_size_change": 4
+   },
+   "final_price": "75684.31649580428",
+   "first_event_utc_ms": 1793995809742,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793996414640,
+   "market_gaps": 0,
+   "market_id": "6732267",
+   "price_to_beat": "75756.63866780735",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793996100",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4760,
+    "book": 3644,
+    "last_trade_price": 1819,
+    "price_change": 174695
+   },
+   "final_price": "75690.91237128948",
+   "first_event_utc_ms": 1793996107367,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793996721122,
+   "market_gaps": 0,
+   "market_id": "6732289",
+   "price_to_beat": "75684.31649580428",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793996400",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 5900,
+    "book": 4460,
+    "last_trade_price": 2226,
+    "price_change": 213401
+   },
+   "final_price": "75698.43010951353",
+   "first_event_utc_ms": 1793996405355,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793997018998,
+   "market_gaps": 0,
+   "market_id": "6732749",
+   "price_to_beat": "75690.91237128948",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793996700",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3604,
+    "book": 2706,
+    "last_trade_price": 1353,
+    "price_change": 115277,
+    "tick_size_change": 4
+   },
+   "final_price": "75787.0302266024",
+   "first_event_utc_ms": 1793996703441,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793997316530,
+   "market_gaps": 0,
+   "market_id": "6732889",
+   "price_to_beat": "75698.43010951353",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793997000",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4992,
+    "book": 3874,
+    "last_trade_price": 1943,
+    "price_change": 156869
+   },
+   "final_price": "75736.68199135938",
+   "first_event_utc_ms": 1793997001651,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793997613322,
+   "market_gaps": 0,
+   "market_id": "6732948",
+   "price_to_beat": "75787.0302266024",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793997300",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3538,
+    "book": 2900,
+    "last_trade_price": 1448,
+    "price_change": 115730
+   },
+   "final_price": "75780.66299030476",
+   "first_event_utc_ms": 1793997310202,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793997914245,
+   "market_gaps": 0,
+   "market_id": "6732967",
+   "price_to_beat": "75736.68199135938",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793997600",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 16986,
+    "book": 10449,
+    "last_trade_price": 5224,
+    "price_change": 211387
+   },
+   "final_price": "75780.94194863415",
+   "first_event_utc_ms": 1793997607941,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793998218014,
+   "market_gaps": 0,
+   "market_id": "6733008",
+   "price_to_beat": "75780.66299030476",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793997900",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 17814,
+    "book": 13372,
+    "last_trade_price": 6677,
+    "price_change": 187979
+   },
+   "final_price": "75772.9072658897",
+   "first_event_utc_ms": 1793997905784,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793998522826,
+   "market_gaps": 0,
+   "market_id": "6733318",
+   "price_to_beat": "75780.94194863415",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793998200",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 22374,
+    "book": 16269,
+    "last_trade_price": 8127,
+    "price_change": 195201
+   },
+   "final_price": "75776.73605010289",
+   "first_event_utc_ms": 1793998203482,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793998818269,
+   "market_gaps": 0,
+   "market_id": "6733589",
+   "price_to_beat": "75772.9072658897",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793998500",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 9598,
+    "book": 7172,
+    "last_trade_price": 3580,
+    "price_change": 191230
+   },
+   "final_price": "75780.84229535366",
+   "first_event_utc_ms": 1793998502530,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793999117659,
+   "market_gaps": 0,
+   "market_id": "6733649",
+   "price_to_beat": "75776.73605010289",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793998800",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 8674,
+    "book": 6790,
+    "last_trade_price": 3393,
+    "price_change": 149461
+   },
+   "final_price": "75767.8407816697",
+   "first_event_utc_ms": 1793998800627,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793999416574,
+   "market_gaps": 0,
+   "market_id": "6733715",
+   "price_to_beat": "75780.84229535366",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793999100",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3346,
+    "book": 2800,
+    "last_trade_price": 1399,
+    "price_change": 103658
+   },
+   "final_price": "75796.21742186791",
+   "first_event_utc_ms": 1793999109497,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1793999713735,
+   "market_gaps": 0,
+   "market_id": "6733755",
+   "price_to_beat": "75767.8407816697",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793999400",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 7044,
+    "book": 5798,
+    "last_trade_price": 2898,
+    "price_change": 155941,
+    "tick_size_change": 4
+   },
+   "final_price": "75788.16423970682",
+   "first_event_utc_ms": 1793999407715,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794000019891,
+   "market_gaps": 0,
+   "market_id": "6733769",
+   "price_to_beat": "75796.21742186791",
+   "resolved": true,
+   "slug": "btc-updown-5m-1793999700",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 7382,
+    "book": 5838,
+    "last_trade_price": 2909,
+    "price_change": 132995
+   },
+   "final_price": "75783.51171890946",
+   "first_event_utc_ms": 1793999705776,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794000321386,
+   "market_gaps": 0,
+   "market_id": "6733811",
+   "price_to_beat": "75788.16423970682",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794000000",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3720,
+    "book": 3250,
+    "last_trade_price": 1621,
+    "price_change": 60243
+   },
+   "final_price": "75679.21952726516",
+   "first_event_utc_ms": 1794000003444,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794000616942,
+   "market_gaps": 0,
+   "market_id": "6733893",
+   "price_to_beat": "75783.51171890946",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794000300",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3090,
+    "book": 2728,
+    "last_trade_price": 1361,
+    "price_change": 105338,
+    "tick_size_change": 4
+   },
+   "final_price": "75660.97655480157",
+   "first_event_utc_ms": 1794000301148,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794000916503,
+   "market_gaps": 0,
+   "market_id": "6733949",
+   "price_to_beat": "75679.21952726516",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794000600",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4034,
+    "book": 3224,
+    "last_trade_price": 1611,
+    "price_change": 157197,
+    "tick_size_change": 4
+   },
+   "final_price": null,
+   "first_event_utc_ms": 1794000609211,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794001213643,
+   "market_gaps": 0,
+   "market_id": "6734153",
+   "price_to_beat": "75660.97655480157",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794000900",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 2860,
+    "book": 2222,
+    "last_trade_price": 1109,
+    "price_change": 101130,
+    "tick_size_change": 4
+   },
+   "final_price": "75717.80453467788",
+   "first_event_utc_ms": 1794000906732,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794001516470,
+   "market_gaps": 0,
+   "market_id": "6734169",
+   "price_to_beat": "75677.05367205011",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794001200",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 4344,
+    "book": 3216,
+    "last_trade_price": 1605,
+    "price_change": 171368
+   },
+   "final_price": "75709.44960023629",
+   "first_event_utc_ms": 1794001206751,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794001816965,
+   "market_gaps": 0,
+   "market_id": "6734289",
+   "price_to_beat": "75717.80453467788",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794001500",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3086,
+    "book": 2364,
+    "last_trade_price": 1181,
+    "price_change": 147649
+   },
+   "final_price": "75733.21579230526",
+   "first_event_utc_ms": 1794001508466,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794002113582,
+   "market_gaps": 0,
+   "market_id": "6734636",
+   "price_to_beat": "75709.44960023629",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794001800",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 2632,
+    "book": 1556,
+    "last_trade_price": 776,
+    "price_change": 102561,
+    "tick_size_change": 4
+   },
+   "final_price": "75817.37619415116",
+   "first_event_utc_ms": 1794001807337,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794002420971,
+   "market_gaps": 0,
+   "market_id": "6734822",
+   "price_to_beat": "75733.21579230526",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794002100",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 2944,
+    "book": 2238,
+    "last_trade_price": 1117,
+    "price_change": 124542,
+    "tick_size_change": 4
+   },
+   "final_price": "75977.41980018631",
+   "first_event_utc_ms": 1794002105981,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794002718532,
+   "market_gaps": 0,
+   "market_id": "6734848",
+   "price_to_beat": "75817.37619415116",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794002400",
+   "yes_price": "1"
+  },
+  {
+   "events": {
+    "best_bid_ask": 3834,
+    "book": 2886,
+    "last_trade_price": 1440,
+    "price_change": 159543,
+    "tick_size_change": 4
+   },
+   "final_price": null,
+   "first_event_utc_ms": 1794002403878,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794003019234,
+   "market_gaps": 0,
+   "market_id": "6734960",
+   "price_to_beat": "75977.41980018631",
+   "resolved": true,
+   "slug": "btc-updown-5m-1794002700",
+   "yes_price": "0"
+  },
+  {
+   "events": {
+    "best_bid_ask": 1920,
+    "book": 1650,
+    "last_trade_price": 824,
+    "price_change": 94562,
+    "tick_size_change": 4
+   },
+   "final_price": null,
+   "first_event_utc_ms": 1794002701740,
+   "full_lifespan_captured": true,
+   "last_event_utc_ms": 1794003316483,
+   "market_gaps": 0,
+   "market_id": "6734978",
+   "price_to_beat": null,
+   "resolved": false,
+   "slug": "btc-updown-5m-1794003000",
+   "yes_price": null
+  },
+  {
+   "events": {
+    "best_bid_ask": 878,
+    "book": 730,
+    "last_trade_price": 364,
+    "price_change": 52891
+   },
+   "final_price": null,
+   "first_event_utc_ms": 1794003009577,
+   "full_lifespan_captured": false,
+   "last_event_utc_ms": 1794003398942,
+   "market_gaps": 0,
+   "market_id": "6734981",
+   "price_to_beat": null,
+   "resolved": false,
+   "slug": "btc-updown-5m-1794003300",
+   "yes_price": null
+  },
+  {
+   "events": {
+    "book": 2,
+    "price_change": 202
+   },
+   "final_price": null,
+   "first_event_utc_ms": 1794003307201,
+   "full_lifespan_captured": false,
+   "last_event_utc_ms": 1794003398503,
+   "market_gaps": 0,
+   "market_id": "6735008",
+   "price_to_beat": null,
+   "resolved": false,
+   "slug": "btc-updown-5m-1794003600",
+   "yes_price": null
+  }
+ ],
+ "parts": 9332,
+ "rest_validation": {
+  "exact_depth_match": 215,
+  "exact_rate": "0.3171091445427728613569321534",
+  "samples": 678,
+  "samples_while_invalid": 0,
+  "tolerance": "REST and stream samples are not simultaneous, so fast markets can differ by a few levels without any missed event",
+  "top_of_book_match": 653
+ },
+ "stream_snapshot_validation": {
+  "avg_level_diffs": "0.02000216166556331653539051839",
+  "checks": 148034,
+  "exact_depth_match": 147479,
+  "note": "A book message follows a trade, so some difference is expected: the trade changed those levels and no price_change reported it",
+  "top_of_book_match": 148002
+ },
+ "twap_points": 9604
+}

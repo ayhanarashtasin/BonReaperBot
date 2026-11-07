@@ -45,3 +45,5 @@ reports/shadow/
 reports/**/*.records.jsonl
 reports/*_real.txt
 reports/compare_run.txt
+reports/**/*_run.txt
+reports/profile_run.txt
