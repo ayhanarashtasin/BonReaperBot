@@ -110,6 +110,7 @@ reports/        SDK audit, research reports, readiness memo
 - [Architecture.md](Architecture.md): engineering blueprint
 - [tasks.md](tasks.md): task queue with evidence-based checkboxes
 - [docs/adr/README.md](docs/adr/README.md): decisions, including where the SDK differed from the plan
+- [instruction.md](instruction.md): Ubuntu VPS setup, step by step, written for an AI agent
 
 ## License
 
